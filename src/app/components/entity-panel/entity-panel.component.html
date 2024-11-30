@@ -1,0 +1,71 @@
+<p-panel>
+  <ng-template #header>
+    <div class="panel-item">
+      <span class="header">{{ entityName() }}s</span>
+      <p-button
+        icon="pi pi-plus"
+        text="true"
+        [ariaLabel]="'Create ' + entityName()"
+        [pTooltip]="'Create ' + entityName()"
+        tooltipPosition="top"
+        showDelay="500"
+        (click)="create.toggle($event)"
+      ></p-button>
+    </div>
+  </ng-template>
+  @for (item of items(); track item.id) {
+    <div
+      class="panel-item hover"
+      [class.selected]="
+        item.id === selectedItem() || item.id === activeMenuItemId()
+      "
+      (click)="itemClick.emit(item.id)"
+    >
+      <span class="name">{{ item.name }}</span>
+      <p-button
+        icon="pi pi-ellipsis-h"
+        text="true"
+        ariaLabel="Actions"
+        pTooltip="Actions"
+        tooltipPosition="top"
+        showDelay="500"
+        (click)="onOpenActionMenu(item.id, actionMenu, $event); (true)"
+      ></p-button>
+    </div>
+  } @empty {
+    <div class="empty">
+      <i class="pi pi-search"></i>
+      <span>Nothing to see here...</span>
+    </div>
+  }
+</p-panel>
+
+<p-menu
+  #actionMenu
+  [model]="actionMenuItems"
+  popup="true"
+  (onHide)="activeMenuItemId.set(undefined)"
+></p-menu>
+<p-popover #create>
+  <p-inputgroup>
+    <input
+      id="name"
+      type="text"
+      pInputText
+      placeholder="Name"
+      [formControl]="nameControl"
+    />
+    <p-button
+      icon="pi pi-plus"
+      label="Create"
+      [disabled]="!nameControl.valid"
+      (click)="onCreate(create)"
+    ></p-button>
+  </p-inputgroup>
+
+  @if (nameControl.errors && nameControl.errors["duplicate"]) {
+    <small id="name-help" class="invalid"
+      >A {{ entityName() }} with this name already exists</small
+    >
+  }
+</p-popover>

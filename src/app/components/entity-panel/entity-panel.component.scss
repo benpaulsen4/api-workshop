@@ -1,0 +1,54 @@
+:host {
+  display: block;
+  width: 300px;
+}
+
+.panel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  border-radius: 6px;
+
+  &.hover {
+    cursor: pointer;
+    p-button {
+      opacity: 0;
+    }
+
+    &:hover,
+    &.selected {
+      background: var(--p-button-text-primary-hover-background);
+      p-button {
+        opacity: 100;
+      }
+    }
+  }
+}
+
+.header {
+  font-size: 24px;
+  font-weight: bold;
+  text-transform: capitalize;
+  padding-left: 4px;
+}
+
+.name {
+  padding-left: 8px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 8px;
+
+  i {
+    font-size: 1.5rem;
+  }
+}
+
+.invalid {
+  color: var(--p-inputtext-invalid-placeholder-color);
+}
