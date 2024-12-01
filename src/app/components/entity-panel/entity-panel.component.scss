@@ -18,7 +18,7 @@
 
     &:hover,
     &.selected {
-      background: var(--p-button-text-primary-hover-background);
+      background: var(--p-menu-item-focus-background);
       p-button {
         opacity: 100;
       }
@@ -27,7 +27,7 @@
 }
 
 .header {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   text-transform: capitalize;
   padding-left: 4px;
@@ -35,6 +35,8 @@
 
 .name {
   padding-left: 8px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .empty {

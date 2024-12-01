@@ -1,8 +1,12 @@
-<app-entity-panel
-  [entityName]="'cracker'"
-  [items]="items"
-  [selectedItem]="selectedItem"
-  (itemClick)="onSelect($event)"
-  (create)="onCreate($event)"
-  (delete)="onDelete($event)"
-></app-entity-panel>
+@if (loading()) {
+  loading
+} @else {
+  <app-entity-panel
+    entityName="schema"
+    [items]="items"
+    [selectedItem]="selectedItem"
+    (itemClick)="onSelect($event)"
+    (create)="onCreate($event)"
+    (delete)="onDelete($event)"
+  ></app-entity-panel>
+}

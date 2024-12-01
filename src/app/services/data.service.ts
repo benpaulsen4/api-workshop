@@ -1,0 +1,35 @@
+import { Injectable } from '@angular/core';
+import { addRxPlugin, createRxDatabase, RxCollection, RxDatabase } from 'rxdb';
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { SchemaSchema } from '../models/schema';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class DataService {
+  private db?: RxDatabase;
+
+  async initializeDatabase() {
+    console.log('initializing db');
+    addRxPlugin(RxDBDevModePlugin);
+
+    this.db = await createRxDatabase({
+      name: 'mydatabase',
+      storage: getRxStorageDexie(),
+    });
+
+    await this.db.addCollections({ schemas: { schema: SchemaSchema } });
+    console.log('db ready');
+  }
+
+  getCollection(collection: DataCollections): RxCollection {
+    if (!this.db) throw new Error('Database is not initialized');
+
+    return this.db[collection];
+  }
+}
+
+export enum DataCollections {
+  Schemas = 'schemas',
+}

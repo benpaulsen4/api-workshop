@@ -1,7 +1,8 @@
 import {
   Component,
-  computed,
+  Injector,
   input,
+  OnInit,
   output,
   signal,
 } from '@angular/core';
@@ -13,12 +14,12 @@ import { MenuItem } from 'primeng/api';
 import { Popover } from 'primeng/popover';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputText } from 'primeng/inputtext';
-import {
-  FormControl,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomValidators } from '../../utilities/custom-validators';
+import { map, Observable } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { AsyncPipe } from '@angular/common';
+import { NamedEntity } from '../../models/named-entity';
 
 @Component({
   selector: 'app-entity-panel',
@@ -32,13 +33,14 @@ import { CustomValidators } from '../../utilities/custom-validators';
     InputGroup,
     InputText,
     ReactiveFormsModule,
+    AsyncPipe,
   ],
   templateUrl: './entity-panel.component.html',
   styleUrl: './entity-panel.component.scss',
 })
-export class EntityPanelComponent {
+export class EntityPanelComponent implements OnInit {
   readonly entityName = input<string>();
-  readonly items = input<IEntityPanelItem[]>();
+  readonly items = input<Observable<NamedEntity[]>>();
   readonly selectedItem = input<string | undefined>();
 
   readonly create = output<string>();
@@ -55,14 +57,22 @@ export class EntityPanelComponent {
     },
   ];
 
-  readonly nameControl = new FormControl<string>('', [
-    Validators.required,
-    Validators.maxLength(100),
-    CustomValidators.noDuplicates(
-      computed(() => this.items()?.map((i) => i.name)),
-    ),
-  ]);
+  nameControl!: FormControl<string | null>;
   readonly activeMenuItemId = signal<string | undefined>(undefined);
+
+  constructor(private injector: Injector) {}
+
+  ngOnInit(): void {
+    this.nameControl = new FormControl<string>('', [
+      Validators.required,
+      Validators.maxLength(100),
+      CustomValidators.noDuplicates(
+        toSignal(this.items()!.pipe(map((items) => items.map((i) => i.name))), {
+          injector: this.injector,
+        }),
+      ),
+    ]);
+  }
 
   onOpenActionMenu(itemId: string, menu: Menu, event: Event) {
     this.activeMenuItemId.set(itemId);
@@ -78,9 +88,4 @@ export class EntityPanelComponent {
     this.nameControl.setValue('');
     this.nameControl.markAsPristine();
   }
-}
-
-export interface IEntityPanelItem {
-  id: string;
-  name: string;
 }

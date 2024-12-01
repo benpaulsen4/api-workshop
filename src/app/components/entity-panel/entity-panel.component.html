@@ -13,7 +13,7 @@
       ></p-button>
     </div>
   </ng-template>
-  @for (item of items(); track item.id) {
+  @for (item of items() | async; track item.id) {
     <div
       class="panel-item hover"
       [class.selected]="
