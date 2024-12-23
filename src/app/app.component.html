@@ -4,9 +4,13 @@
   <app-entity-panel
     entityName="schema"
     [items]="items"
-    [selectedItem]="selectedItem"
+    [selectedItem]="selectedItem()"
     (itemClick)="onSelect($event)"
     (create)="onCreate($event)"
     (delete)="onDelete($event)"
   ></app-entity-panel>
+
+  @if (selectedItem()) {
+    <app-schema-editor [schemaId]="selectedItem()!"></app-schema-editor>
+  }
 }

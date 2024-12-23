@@ -1,0 +1,61 @@
+@if (loading()) {
+  loading...
+} @else {
+  <h1>{{ schema().name }}</h1>
+  <p-toolbar>
+    <ng-template #start
+      ><div class="status-section">
+        <span>{{ schema().properties.length }} Properties</span> <span>•</span>
+        <span>{{ schema().modified }} ({{ saveState() }})</span>
+        <!-- todo date pipe and plural pipe -->
+      </div></ng-template
+    >
+    <ng-template #end>
+      <p-button
+        icon="pi pi-undo"
+        text="true"
+        ariaLabel="Undo"
+        pTooltip="Undo"
+        tooltipPosition="top"
+        showDelay="500"
+      ></p-button>
+      <p-button
+        icon="pi pi-undo flip-horizontal"
+        text="true"
+        ariaLabel="Redo"
+        pTooltip="Redo"
+        tooltipPosition="top"
+        showDelay="500"
+      ></p-button>
+      <p-button
+        icon="pi pi-download"
+        text="true"
+        ariaLabel="Download schema"
+        pTooltip="Download schema"
+        tooltipPosition="top"
+        showDelay="500"
+      ></p-button>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="schema-canvas">
+    @for (prop of schema().properties; track prop.name) {
+      <app-property
+        [property]="prop"
+        (propertyUpdated)="onPropertyUpdated($event)"
+      ></app-property>
+    }
+
+    @if (addMode()) {
+      <app-add-property
+        (propertyAdded)="onPropertyAdded($event)"
+      ></app-add-property>
+    } @else {
+      <p-button
+        label="Add Property"
+        icon="pi pi-plus"
+        (click)="addMode.set(true)"
+      ></p-button>
+    }
+  </div>
+}

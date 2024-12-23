@@ -3,20 +3,22 @@ import { Component, OnInit, signal } from '@angular/core';
 import { EntityPanelComponent } from './components/entity-panel/entity-panel.component';
 import { v7 } from 'uuid';
 import { DataCollections, DataService } from './services/data.service';
-import { firstValueFrom, from, Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { NamedEntity } from './models/named-entity';
 import { Schema } from './models/schema';
+import { SchemaEditorComponent } from './components/schema-editor/schema-editor.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [EntityPanelComponent],
+  imports: [EntityPanelComponent, SchemaEditorComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   items!: Observable<NamedEntity[]>;
-  selectedItem?: string;
+
+  readonly selectedItem = signal<string | undefined>(undefined);
   readonly loading = signal(true);
 
   constructor(private dataService: DataService) {}
@@ -28,7 +30,6 @@ export class AppComponent implements OnInit {
         .getCollection(DataCollections.Schemas)
         .find().$;
     });
-    this.dataService.getCollection(DataCollections.Schemas);
   }
 
   onCreate(name: string) {
@@ -37,21 +38,21 @@ export class AppComponent implements OnInit {
       name,
       created: Date.now(),
       modified: Date.now(),
+      properties: [],
     };
     this.dataService.getCollection(DataCollections.Schemas)?.insert(item);
-    this.selectedItem = item.id;
+    this.selectedItem.set(item.id);
   }
 
   onSelect(id: string) {
-    this.selectedItem = id;
+    this.selectedItem.set(id);
   }
 
   async onDelete(id: string) {
-    this.dataService
+    await this.dataService
       .getCollection(DataCollections.Schemas)
       ?.findOne({ selector: { id: { $eq: id } } })
       .remove();
-    if (this.selectedItem == id)
-      this.selectedItem = (await firstValueFrom(this.items!))[0].id;
+    this.selectedItem.update((item) => (item === id ? undefined : item));
   }
 }

@@ -1,0 +1,20 @@
+<input
+  #name
+  pInputText
+  placeholder="Name"
+  [formControl]="nameFormControl"
+  (keydown)="onNameKeydown($event, type)"
+/>
+:
+<p-auto-complete
+  #type
+  placeholder="Type"
+  completeOnFocus="true"
+  autoOptionFocus="true"
+  autoHighlight="true"
+  [formControl]="typeFormControl"
+  [suggestions]="typeaheadSuggestions"
+  (completeMethod)="onTypeahead($event)"
+  (keydown.enter)="onTypeEnterKeydown(name)"
+  (keydown.tab)="$event.preventDefault()"
+/>

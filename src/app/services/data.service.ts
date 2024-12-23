@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { addRxPlugin, createRxDatabase, RxCollection, RxDatabase } from 'rxdb';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
 import { SchemaSchema } from '../models/schema';
 
 @Injectable({
@@ -13,13 +14,24 @@ export class DataService {
   async initializeDatabase() {
     console.log('initializing db');
     addRxPlugin(RxDBDevModePlugin);
+    addRxPlugin(RxDBMigrationSchemaPlugin);
 
     this.db = await createRxDatabase({
       name: 'mydatabase',
       storage: getRxStorageDexie(),
     });
 
-    await this.db.addCollections({ schemas: { schema: SchemaSchema } });
+    await this.db.addCollections({
+      schemas: {
+        schema: SchemaSchema,
+        migrationStrategies: {
+          1: function (oldDoc) {
+            oldDoc.properties = [];
+            return oldDoc;
+          },
+        },
+      },
+    });
     console.log('db ready');
   }
 

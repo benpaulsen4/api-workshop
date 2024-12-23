@@ -1,0 +1,27 @@
+<div class="info">
+  <span class="name">{{ property().name }}</span>
+  <span class="type">:{{ typeString() }}</span>
+</div>
+
+@if (this.hasChildProperties()) {
+  <div class="child">
+    @for (prop of childProperties(); track prop.name) {
+      <app-property [property]="prop"></app-property>
+    }
+
+    @if (canAddChildProperties()) {
+      @if (addMode()) {
+        <app-add-property
+          (propertyAdded)="onChildPropertyAdded($event)"
+        ></app-add-property>
+      } @else {
+        <p-button
+          label="Add Property"
+          icon="pi pi-plus"
+          size="small"
+          (click)="addMode.set(true)"
+        ></p-button>
+      }
+    }
+  </div>
+}
