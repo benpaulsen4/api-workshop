@@ -1,5 +1,11 @@
 import { NamedEntity } from './named-entity';
-import { Property, Schema } from './schema';
+import {
+  ArrayOptions,
+  ObjectOptions,
+  Property,
+  PropertyType,
+  Schema,
+} from './schema';
 
 export interface EditAction {
   apply<T extends NamedEntity>(currentState: T): void;
@@ -79,34 +85,95 @@ export class UpdateSchemaProperty implements EditAction {
   ) {}
 
   apply<T>(currentState: T): void {
-    const existing = (currentState as Schema).properties.find(
+    const index = (currentState as Schema).properties.findIndex(
       (p) => p.name == this.before.name,
     );
 
-    if (!existing)
+    if (index === -1)
       throw new Error('Cannot apply action due to inconsistent before state');
 
-    existing.name = this.after.name;
-    existing.nullable = this.after.nullable;
-    existing.type = this.after.type;
-    existing.options = this.after.options;
+    (currentState as Schema).properties.splice(index, 1, this.after);
   }
 
   revert<T>(currentState: T): void {
-    const existing = (currentState as Schema).properties.find(
+    const index = (currentState as Schema).properties.findIndex(
       (p) => p.name == this.after.name,
     );
 
-    if (!existing)
+    if (index === -1)
       throw new Error('Cannot apply action due to inconsistent after state');
 
-    existing.name = this.before.name;
-    existing.nullable = this.before.nullable;
-    existing.type = this.before.type;
-    existing.options = this.before.options;
+    (currentState as Schema).properties.splice(index, 1, this.before);
   }
 
   describe(): string {
     return `Updated property '${this.after.name}'`;
+  }
+}
+
+export class UpdateChildProperty implements EditAction {
+  constructor(
+    private parent: Property,
+    private innerUpdate: EditAction,
+  ) {}
+
+  apply<T>(currentState: T): void {
+    let clone;
+
+    if (
+      this.parent.type === PropertyType.Object &&
+      (this.parent.options as ObjectOptions)?.objectType === 'inline'
+    ) {
+      clone = structuredClone(this.parent);
+      this.innerUpdate.apply({
+        properties: (clone.options as ObjectOptions).childProperties,
+      } as Schema);
+    } else if (
+      this.parent.type === PropertyType.Array &&
+      ((this.parent.options as ArrayOptions)?.childOptions as ObjectOptions)
+        ?.objectType === 'inline'
+    ) {
+      clone = structuredClone(this.parent);
+      this.innerUpdate.apply({
+        properties: (
+          (clone.options as ArrayOptions).childOptions as ObjectOptions
+        ).childProperties,
+      } as Schema);
+    } else {
+      throw new Error(
+        'Cannot update child property as parent is not inline object or array of type inline object',
+      );
+    }
+
+    const index = (currentState as Schema).properties.findIndex(
+      (p) => p.name == this.parent.name,
+    );
+
+    (currentState as Schema).properties.splice(index, 1, clone);
+  }
+
+  revert<T>(currentState: T): void {
+    if (
+      this.parent.type !== PropertyType.Object ||
+      (this.parent.options as ObjectOptions).objectType != 'inline'
+    )
+      throw new Error(
+        'Cannot apply action to child as parent is not inline object',
+      );
+
+    const index = (currentState as Schema).properties.findIndex(
+      (p) => p.name == this.parent.name,
+    );
+
+    const clone = structuredClone(this.parent);
+    this.innerUpdate.revert({
+      properties: (clone.options as ObjectOptions).childProperties,
+    } as Schema);
+
+    (currentState as Schema).properties.splice(index, 1, clone);
+  }
+
+  describe(): string {
+    return `Updated child of '${this.parent.name}': ${this.innerUpdate.describe()}`;
   }
 }

@@ -48,7 +48,9 @@
 
     @if (addMode()) {
       <app-add-property
+        [existingPropertyNames]="propertyNames"
         (propertyAdded)="onPropertyAdded($event)"
+        (stoppedAddingProperties)="addMode.set(false)"
       ></app-add-property>
     } @else {
       <p-button

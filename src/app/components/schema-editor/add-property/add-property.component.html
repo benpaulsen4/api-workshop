@@ -3,7 +3,8 @@
   pInputText
   placeholder="Name"
   [formControl]="nameFormControl"
-  (keydown)="onNameKeydown($event, type)"
+  (keydown)="onNameKeydown($event)"
+  (blur)="onBlur()"
 />
 :
 <p-auto-complete
@@ -15,6 +16,28 @@
   [formControl]="typeFormControl"
   [suggestions]="typeaheadSuggestions"
   (completeMethod)="onTypeahead($event)"
-  (keydown.enter)="onTypeEnterKeydown(name)"
+  (keydown.enter)="onTypeEnterKeydown()"
   (keydown.tab)="$event.preventDefault()"
+  (blur)="onBlur()"
 />
+
+@if (nameFormControl.dirty) {
+  @for (error of errorCodesOf(nameFormControl.errors); track error) {
+    <p-message severity="error" icon="pi pi-times-circle">
+      @switch (error) {
+        @case ("required") {
+          A name is required
+        }
+        @case ("duplicate") {
+          A property with this name already exists
+        }
+      }
+    </p-message>
+  }
+}
+
+@if (showTypeError()) {
+  <p-message severity="error" icon="pi pi-times-circle">
+    The type entered is invalid
+  </p-message>
+}

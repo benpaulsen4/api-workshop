@@ -54,6 +54,7 @@
       pInputText
       placeholder="Name"
       [formControl]="nameControl"
+      (keydown.enter)="onCreate(create)"
     />
     <p-button
       icon="pi pi-plus"

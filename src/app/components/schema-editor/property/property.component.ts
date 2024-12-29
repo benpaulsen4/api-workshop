@@ -9,12 +9,20 @@ import {
   PropertyType,
 } from '../../../models/schema';
 import { AddPropertyComponent } from '../add-property/add-property.component';
-import { UpdateSchemaProperty } from '../../../models/edit-actions';
+import {
+  EditAction,
+  UpdateChildProperty,
+  UpdateSchemaProperty,
+} from '../../../models/edit-actions';
+import { Message } from 'primeng/message';
+import { Tooltip } from 'primeng/tooltip';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-property',
   standalone: true,
-  imports: [Button, AddPropertyComponent],
+  imports: [Button, AddPropertyComponent, Message, Tooltip],
   templateUrl: './property.component.html',
   styleUrl: './property.component.scss',
 })
@@ -22,22 +30,42 @@ export class PropertyComponent {
   readonly property = input.required<Property>();
   readonly existingSchemaLookup = input<Record<string, string>>();
 
-  readonly propertyUpdated = output<UpdateSchemaProperty>();
+  readonly propertyUpdated = output<EditAction>();
 
   readonly typeString = computed(() => this.getTypeString(this.property()));
-  //todo inline child property editing when in an array
+
   readonly hasChildProperties = computed(
-    () => this.property().type === PropertyType.Object,
+    () =>
+      this.property().type === PropertyType.Object ||
+      (this.property().type === PropertyType.Array &&
+        (this.property().options as ArrayOptions)?.childType ===
+          PropertyType.Object),
   );
   readonly childProperties = computed(() => {
     if (!this.hasChildProperties()) return [];
 
-    return (this.property().options as ObjectOptions).childProperties ?? []; //todo return props for refs
+    return (
+      (this.property().options as ObjectOptions)?.childProperties ??
+      ((this.property().options as ArrayOptions)?.childOptions as ObjectOptions)
+        ?.childProperties ??
+      []
+    ); //todo return props for refs
   });
   readonly canAddChildProperties = computed(
     () =>
-      this.hasChildProperties() &&
-      (this.property().options as ObjectOptions)?.objectType === 'inline',
+      (this.hasChildProperties() &&
+        (this.property().options as ObjectOptions)?.objectType === 'inline') ||
+      ((this.property().options as ArrayOptions)?.childOptions as ObjectOptions)
+        ?.objectType === 'inline',
+  );
+  readonly showArrayOfArrayWarning = computed(
+    () =>
+      this.property().type === PropertyType.Array &&
+      (this.property().options as ArrayOptions)?.childType ===
+        PropertyType.Array,
+  );
+  readonly propertyNames = toObservable(this.childProperties).pipe(
+    map((a) => a.map((p) => p.name)),
   );
 
   readonly addMode = signal(false);
@@ -45,13 +73,20 @@ export class PropertyComponent {
   onChildPropertyAdded(prop: Property) {
     if (!this.canAddChildProperties()) return;
 
-    //todo this is sketchy as we are manually mutating signal state to get change detection working - this means the child doesn't _actually_ reflect the DB state
-    const before = structuredClone(this.property());
-    (this.property().options as ObjectOptions).childProperties?.push(prop);
+    const clone = structuredClone(this.property());
 
-    this.propertyUpdated.emit(
-      new UpdateSchemaProperty(before, this.property()),
-    );
+    if (this.property().type === PropertyType.Object) {
+      (clone.options as ObjectOptions).childProperties!.push(prop);
+    } else if (this.property().type === PropertyType.Array) {
+      (
+        (clone.options as ArrayOptions)!.childOptions as ObjectOptions
+      ).childProperties!.push(prop);
+    }
+    this.propertyUpdated.emit(new UpdateSchemaProperty(this.property(), clone));
+  }
+
+  onChildPropertyUpdated(edit: EditAction) {
+    this.propertyUpdated.emit(new UpdateChildProperty(this.property(), edit));
   }
 
   getTypeString(prop: Property): string {

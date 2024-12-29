@@ -1,18 +1,31 @@
 <div class="info">
   <span class="name">{{ property().name }}</span>
   <span class="type">:{{ typeString() }}</span>
+  @if (showArrayOfArrayWarning()) {
+    <p-message size="small" severity="warn" icon="pi pi-exclamation-triangle">
+      Arrays of arrays are not fully supported.
+      <u pTooltip="Certain features like the inline object editor will not work"
+        >What does this mean?</u
+      >
+    </p-message>
+  }
 </div>
 
 @if (this.hasChildProperties()) {
   <div class="child">
     @for (prop of childProperties(); track prop.name) {
-      <app-property [property]="prop"></app-property>
+      <app-property
+        (propertyUpdated)="onChildPropertyUpdated($event)"
+        [property]="prop"
+      ></app-property>
     }
 
     @if (canAddChildProperties()) {
       @if (addMode()) {
         <app-add-property
+          [existingPropertyNames]="propertyNames"
           (propertyAdded)="onChildPropertyAdded($event)"
+          (stoppedAddingProperties)="addMode.set(false)"
         ></app-add-property>
       } @else {
         <p-button
