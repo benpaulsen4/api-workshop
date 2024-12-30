@@ -33,20 +33,27 @@ export class UpdateName implements EditAction {
 }
 
 export class AddSchemaProperty implements EditAction {
+  private index?: number;
+
   constructor(private property: Property) {}
 
   apply<T>(currentState: T): void {
     (currentState as Schema).properties.push(this.property);
+    this.index = (currentState as Schema).properties.length - 1;
   }
 
   revert<T>(currentState: T): void {
-    (currentState as Schema).properties = (
-      currentState as Schema
-    ).properties.filter((p) => p.name != this.property.name);
+    if (this.index === undefined || this.index === -1) {
+      throw new Error(
+        'Cannot revert add property as the property was not found',
+      );
+    }
+
+    (currentState as Schema).properties.splice(this.index, 1);
   }
 
   describe(): string {
-    return `Added property '${this.property.name}`;
+    return `Added property '${this.property.name}'`;
   }
 }
 
@@ -57,20 +64,20 @@ export class RemoveSchemaProperty implements EditAction {
 
   apply<T>(currentState: T): void {
     this.index = (currentState as Schema).properties.findIndex(
-      (p) => p.name == this.property.name,
+      (p) => p.name === this.property.name,
     );
 
-    (currentState as Schema).properties = (
-      currentState as Schema
-    ).properties.filter((p) => p.name != this.property.name);
+    if (this.index === undefined || this.index === -1)
+      throw new Error('Cannot remove property as it was not found');
+
+    (currentState as Schema).properties.splice(this.index, 1);
   }
 
   revert<T>(currentState: T): void {
-    if (this.index && this.index != -1) {
-      (currentState as Schema).properties.splice(this.index, 0, this.property);
-    } else {
-      (currentState as Schema).properties.push(this.property);
-    }
+    if (this.index === undefined || this.index === -1)
+      throw new Error('Cannot revert remove property as it was never found');
+
+    (currentState as Schema).properties.splice(this.index, 0, this.property);
   }
 
   describe(): string {
@@ -86,22 +93,24 @@ export class UpdateSchemaProperty implements EditAction {
 
   apply<T>(currentState: T): void {
     const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name == this.before.name,
+      (p) => p.name === this.before.name,
     );
 
     if (index === -1)
-      throw new Error('Cannot apply action due to inconsistent before state');
+      throw new Error('Cannot update property as it was not found');
 
     (currentState as Schema).properties.splice(index, 1, this.after);
   }
 
   revert<T>(currentState: T): void {
     const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name == this.after.name,
+      (p) => p.name === this.after.name,
     );
 
     if (index === -1)
-      throw new Error('Cannot apply action due to inconsistent after state');
+      throw new Error(
+        'Cannot revert update property as the property was not found',
+      );
 
     (currentState as Schema).properties.splice(index, 1, this.before);
   }
@@ -112,6 +121,8 @@ export class UpdateSchemaProperty implements EditAction {
 }
 
 export class UpdateChildProperty implements EditAction {
+  private updatedParent?: Property; //note we could just use full momento of the previous parent to save some back tracking
+
   constructor(
     private parent: Property,
     private innerUpdate: EditAction,
@@ -146,34 +157,56 @@ export class UpdateChildProperty implements EditAction {
     }
 
     const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name == this.parent.name,
+      (p) => p.name === this.parent.name,
     );
 
     (currentState as Schema).properties.splice(index, 1, clone);
+    this.updatedParent = clone;
   }
 
   revert<T>(currentState: T): void {
-    if (
-      this.parent.type !== PropertyType.Object ||
-      (this.parent.options as ObjectOptions).objectType != 'inline'
-    )
+    if (!this.updatedParent)
       throw new Error(
-        'Cannot apply action to child as parent is not inline object',
+        'Cannot revert update of child property as update was never applied',
       );
 
-    const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name == this.parent.name,
-    );
+    let clone;
 
-    const clone = structuredClone(this.parent);
-    this.innerUpdate.revert({
-      properties: (clone.options as ObjectOptions).childProperties,
-    } as Schema);
+    if (
+      this.updatedParent.type === PropertyType.Object &&
+      (this.updatedParent.options as ObjectOptions)?.objectType === 'inline'
+    ) {
+      clone = structuredClone(this.updatedParent);
+      this.innerUpdate.revert({
+        properties: (clone.options as ObjectOptions).childProperties,
+      } as Schema);
+    } else if (
+      this.updatedParent.type === PropertyType.Array &&
+      (
+        (this.updatedParent.options as ArrayOptions)
+          ?.childOptions as ObjectOptions
+      )?.objectType === 'inline'
+    ) {
+      clone = structuredClone(this.updatedParent);
+      this.innerUpdate.revert({
+        properties: (
+          (clone.options as ArrayOptions).childOptions as ObjectOptions
+        ).childProperties,
+      } as Schema);
+    } else {
+      throw new Error(
+        'Cannot revert update child property as parent is not inline object or array of type inline object',
+      );
+    }
+
+    const index = (currentState as Schema).properties.findIndex(
+      (p) => p.name === this.updatedParent!.name,
+    );
 
     (currentState as Schema).properties.splice(index, 1, clone);
   }
 
   describe(): string {
-    return `Updated child of '${this.parent.name}': ${this.innerUpdate.describe()}`;
+    return `Updated child of '${this.updatedParent!.name}': ${this.innerUpdate.describe()}`;
   }
 }

@@ -18,6 +18,8 @@
         pTooltip="Undo"
         tooltipPosition="top"
         showDelay="500"
+        [disabled]="!canUndo()"
+        (click)="onUndo()"
       ></p-button>
       <p-button
         icon="pi pi-undo flip-horizontal"
@@ -26,6 +28,8 @@
         pTooltip="Redo"
         tooltipPosition="top"
         showDelay="500"
+        [disabled]="!canRedo()"
+        (click)="onRedo()"
       ></p-button>
       <p-button
         icon="pi pi-download"

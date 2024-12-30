@@ -1,4 +1,10 @@
-import { DestroyRef, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Injectable,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import { DataCollections, DataService } from './data.service';
 import { RxCollection } from 'rxdb';
 import { NamedEntity } from '../models/named-entity';
@@ -9,14 +15,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Injectable()
 export class EditStateService {
   private collection?: RxCollection;
-  private entityId?: string;
 
-  private undoStack: EditAction[] = [];
-  private redoStack: EditAction[] = [];
+  private undoStack: WritableSignal<EditAction[]> = signal([]);
+  private redoStack: WritableSignal<EditAction[]> = signal([]);
   private saveEdit = new Subject<void>();
 
   entity = signal<NamedEntity | undefined>(undefined);
   saveState = signal<'noChange' | 'unsaved' | 'saving' | 'saved'>('noChange');
+
+  canUndo = computed(() => !!this.undoStack().length);
+  canRedo = computed(() => !!this.redoStack().length);
 
   constructor(
     private dataService: DataService,
@@ -29,7 +37,6 @@ export class EditStateService {
 
   async initialize(id: string) {
     if (!this.collection) throw new Error('Select a collection first');
-    this.entityId = id;
     this.entity.set(
       (
         await this.collection.findOne({ selector: { id: { $eq: id } } }).exec()
@@ -45,7 +52,7 @@ export class EditStateService {
           throw new Error('Cannot save: uninitialized');
 
         this.saveState.set('saving');
-        await this.collection.upsert(structuredClone(this.entity()!)); //todo may need to refactor this - performance intensive
+        await this.collection.upsert(structuredClone(this.entity()!));
         this.saveState.set('saved');
       });
   }
@@ -60,8 +67,12 @@ export class EditStateService {
       return entity;
     });
 
-    this.undoStack.push(action);
-    this.redoStack = [];
+    this.undoStack.update((s) => {
+      s.push(action);
+      return [...s];
+    });
+
+    this.redoStack.set([]);
     this.saveState.set('unsaved');
     this.saveEdit.next();
   }
@@ -70,35 +81,59 @@ export class EditStateService {
     if (!this.collection || !this.entity())
       throw new Error('Cannot undo: uninitialized');
 
-    const lastEdit = this.undoStack.pop();
+    let lastEdit: EditAction | undefined;
+
+    this.undoStack.update((s) => {
+      lastEdit = s.pop();
+      return [...s];
+    });
+
     if (!lastEdit) throw new Error('Cannot undo: no changes to undo');
 
     this.entity.update((entity) => {
-      lastEdit.revert(entity!);
+      lastEdit!.revert(entity!);
       entity!.modified = Date.now();
       return entity;
     });
 
-    this.redoStack.push(lastEdit);
+    this.redoStack.update((s) => {
+      s.push(lastEdit!);
+      return [...s];
+    });
+
     this.saveState.set('unsaved');
     this.saveEdit.next();
+
+    return lastEdit.describe();
   }
 
   redoEdit() {
     if (!this.collection || !this.entity())
       throw new Error('Cannot redo: uninitialized');
 
-    const lastUndo = this.redoStack.pop();
+    let lastUndo: EditAction | undefined;
+
+    this.redoStack.update((s) => {
+      lastUndo = s.pop();
+      return [...s];
+    });
+
     if (!lastUndo) throw new Error('Cannot redo: no undone changes to redo');
 
     this.entity.update((entity) => {
-      lastUndo.apply(entity!);
+      lastUndo!.apply(entity!);
       entity!.modified = Date.now();
       return entity;
     });
 
-    this.undoStack.push(lastUndo);
+    this.undoStack.update((s) => {
+      s.push(lastUndo!);
+      return [...s];
+    });
+
     this.saveState.set('unsaved');
     this.saveEdit.next();
+
+    return lastUndo.describe();
   }
 }

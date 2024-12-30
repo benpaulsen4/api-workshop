@@ -11,3 +11,17 @@ h1, h2, h3, h4, h5, h6 {
 transform: scaleX(-1)
 }
 
+.link-button {
+  padding: 0 !important;
+  font-weight: bold;
+  &:not(:disabled):hover {
+    text-decoration: underline;
+    &.danger {
+      color: var(--p-red-600);
+    }
+  }
+  &:not(:disabled).danger {
+    color: var(--p-red-500);
+  }
+}
+

@@ -7,11 +7,14 @@ import { from, Observable } from 'rxjs';
 import { NamedEntity } from './models/named-entity';
 import { Schema } from './models/schema';
 import { SchemaEditorComponent } from './components/schema-editor/schema-editor.component';
+import { Toast } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [EntityPanelComponent, SchemaEditorComponent],
+  imports: [EntityPanelComponent, SchemaEditorComponent, Toast],
+  providers: [MessageService],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

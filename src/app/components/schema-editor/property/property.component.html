@@ -1,6 +1,7 @@
 <div class="info">
   <span class="name">{{ property().name }}</span>
   <span class="type">:{{ typeString() }}</span>
+
   @if (showArrayOfArrayWarning()) {
     <p-message size="small" severity="warn" icon="pi pi-exclamation-triangle">
       Arrays of arrays are not fully supported.
@@ -9,6 +10,15 @@
       >
     </p-message>
   }
+
+  <p-button
+    link="true"
+    class="prop-action"
+    styleClass="link-button danger"
+    size="small"
+    (click)="onPropertyDeleted()"
+    >Delete</p-button
+  >
 </div>
 
 @if (this.hasChildProperties()) {
@@ -30,6 +40,7 @@
       } @else {
         <p-button
           label="Add Property"
+          class="add-prop-button"
           icon="pi pi-plus"
           size="small"
           (click)="addMode.set(true)"

@@ -11,6 +11,7 @@ import {
 import { AddPropertyComponent } from '../add-property/add-property.component';
 import {
   EditAction,
+  RemoveSchemaProperty,
   UpdateChildProperty,
   UpdateSchemaProperty,
 } from '../../../models/edit-actions';
@@ -87,6 +88,10 @@ export class PropertyComponent {
 
   onChildPropertyUpdated(edit: EditAction) {
     this.propertyUpdated.emit(new UpdateChildProperty(this.property(), edit));
+  }
+
+  onPropertyDeleted() {
+    this.propertyUpdated.emit(new RemoveSchemaProperty(this.property()));
   }
 
   getTypeString(prop: Property): string {

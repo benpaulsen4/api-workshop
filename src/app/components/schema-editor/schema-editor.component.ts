@@ -9,6 +9,7 @@ import { Property, Schema } from '../../models/schema';
 import { PropertyComponent } from './property/property.component';
 import { AddSchemaProperty, EditAction } from '../../models/edit-actions';
 import { BehaviorSubject, map } from 'rxjs';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-schema-editor',
@@ -23,6 +24,8 @@ export class SchemaEditorComponent implements OnInit {
 
   readonly schema = computed(() => this.editStateService.entity() as Schema);
   readonly saveState = computed(() => this.editStateService.saveState());
+  readonly canUndo = computed(() => this.editStateService.canUndo());
+  readonly canRedo = computed(() => this.editStateService.canRedo());
 
   readonly propertiesSubject = new BehaviorSubject<Property[]>([]); //todo temporary solution for signals shitty change detection on ref types (mostly arrays)
   readonly propertyNames = this.propertiesSubject.pipe(
@@ -31,7 +34,10 @@ export class SchemaEditorComponent implements OnInit {
   readonly loading = signal(true);
   readonly addMode = signal(false);
 
-  constructor(private editStateService: EditStateService) {}
+  constructor(
+    private editStateService: EditStateService,
+    private messageService: MessageService,
+  ) {}
 
   ngOnInit(): void {
     this.editStateService.selectCollection(DataCollections.Schemas);
@@ -49,5 +55,23 @@ export class SchemaEditorComponent implements OnInit {
   onPropertyUpdated(edit: EditAction) {
     this.editStateService.addEdit(edit);
     this.propertiesSubject.next(this.schema().properties);
+  }
+
+  onUndo() {
+    const change = this.editStateService.undoEdit();
+    this.messageService.add({
+      severity: 'secondary',
+      summary: 'Undo',
+      detail: `Undid: ${change}`,
+    });
+  }
+
+  onRedo() {
+    const change = this.editStateService.redoEdit();
+    this.messageService.add({
+      severity: 'secondary',
+      summary: 'Redo',
+      detail: `Redid: ${change}`,
+    });
   }
 }
