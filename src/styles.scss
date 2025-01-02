@@ -7,6 +7,15 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--p-text-color);
 }
 
+kbd {
+  background: var(--p-zinc-50);
+  color: var(--p-zinc-700);
+  padding: 0 2px;
+  border: 2px var(--p-zinc-500) solid;
+  border-radius: 6px;
+  display: inline-block;
+}
+
 .flip-horizontal {
 transform: scaleX(-1)
 }

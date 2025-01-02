@@ -1,7 +1,6 @@
 :host {
     display: flex;
     flex-direction: column;
-    gap: 8px;  
   }
 
   .info {
@@ -15,11 +14,16 @@
       color: var(--p-text-muted-color);
     }
 
-    .prop-action {
+    .h-divider {
+      width: 1px;
+      background: var(--p-surface-300);
+    }
+
+    .prop-action, .h-divider {
       opacity: 0;
     }
 
-    &:hover .prop-action {
+    &:hover .prop-action, &:hover .h-divider {
       opacity: 100;
     }
   }
@@ -29,6 +33,7 @@
     flex-direction: column;
     gap: 8px;
     padding-left: 12px;
+    margin-top: 8px;
     margin-left: 4px;
     border-left: 1px var(--p-content-color) solid;
   }

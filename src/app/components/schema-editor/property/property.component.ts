@@ -18,18 +18,28 @@ import {
 import { Message } from 'primeng/message';
 import { Tooltip } from 'primeng/tooltip';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
+import { RenamePropertyComponent } from '../rename-property/rename-property.component';
+import { Popover } from 'primeng/popover';
 
 @Component({
   selector: 'app-property',
   standalone: true,
-  imports: [Button, AddPropertyComponent, Message, Tooltip],
+  imports: [
+    Button,
+    AddPropertyComponent,
+    Message,
+    Tooltip,
+    RenamePropertyComponent,
+    Popover,
+  ],
   templateUrl: './property.component.html',
   styleUrl: './property.component.scss',
 })
 export class PropertyComponent {
   readonly property = input.required<Property>();
   readonly existingSchemaLookup = input<Record<string, string>>();
+  readonly existingPropertyNames = input<Observable<string[]>>();
 
   readonly propertyUpdated = output<EditAction>();
 
@@ -65,7 +75,7 @@ export class PropertyComponent {
       (this.property().options as ArrayOptions)?.childType ===
         PropertyType.Array,
   );
-  readonly propertyNames = toObservable(this.childProperties).pipe(
+  readonly childPropertyNames = toObservable(this.childProperties).pipe(
     map((a) => a.map((p) => p.name)),
   );
 
@@ -90,8 +100,14 @@ export class PropertyComponent {
     this.propertyUpdated.emit(new UpdateChildProperty(this.property(), edit));
   }
 
-  onPropertyDeleted() {
+  onDeleteProperty() {
     this.propertyUpdated.emit(new RemoveSchemaProperty(this.property()));
+  }
+
+  onRenameProperty(newName: string) {
+    const clone = structuredClone(this.property());
+    clone.name = newName;
+    this.propertyUpdated.emit(new UpdateSchemaProperty(this.property(), clone));
   }
 
   getTypeString(prop: Property): string {

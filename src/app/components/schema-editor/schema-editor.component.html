@@ -5,9 +5,26 @@
   <p-toolbar>
     <ng-template #start
       ><div class="status-section">
-        <span>{{ schema().properties.length }} Properties</span> <span>•</span>
-        <span>{{ schema().modified }} ({{ saveState() }})</span>
-        <!-- todo date pipe and plural pipe -->
+        <span>{{
+          schema().properties.length | plural: "Property" : "Properties"
+        }}</span>
+        <span>•</span>
+        <span>
+          @switch (saveState()) {
+            @case ("noChange") {
+              Modified {{ schema().modified | date }}
+            }
+            @case ("unsaved") {
+              Unsaved changes
+            }
+            @case ("saving") {
+              Saving...
+            }
+            @case ("saved") {
+              Saved {{ schema().modified | timeAgo }}
+            }
+          }
+        </span>
       </div></ng-template
     >
     <ng-template #end>
@@ -15,7 +32,7 @@
         icon="pi pi-undo"
         text="true"
         ariaLabel="Undo"
-        pTooltip="Undo"
+        [pTooltip]="undoTip"
         tooltipPosition="top"
         showDelay="500"
         [disabled]="!canUndo()"
@@ -25,7 +42,7 @@
         icon="pi pi-undo flip-horizontal"
         text="true"
         ariaLabel="Redo"
-        pTooltip="Redo"
+        [pTooltip]="redoTip"
         tooltipPosition="top"
         showDelay="500"
         [disabled]="!canRedo()"
@@ -36,7 +53,6 @@
         text="true"
         ariaLabel="Download schema"
         pTooltip="Download schema"
-        tooltipPosition="top"
         showDelay="500"
       ></p-button>
     </ng-template>
@@ -45,6 +61,7 @@
   <div class="schema-canvas">
     @for (prop of schema().properties; track prop.name) {
       <app-property
+        [existingPropertyNames]="propertyNames"
         [property]="prop"
         (propertyUpdated)="onPropertyUpdated($event)"
       ></app-property>
@@ -64,4 +81,7 @@
       ></p-button>
     }
   </div>
+
+  <ng-template #undoTip>Undo (<kbd>Ctrl</kbd> + <kbd>z</kbd>)</ng-template>
+  <ng-template #redoTip>Redo (<kbd>Ctrl</kbd> + <kbd>y</kbd>)</ng-template>
 }

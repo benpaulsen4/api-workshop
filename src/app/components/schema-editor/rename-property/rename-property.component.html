@@ -1,0 +1,17 @@
+<p-inputgroup>
+  <input
+    pInputText
+    placeholder="Name"
+    [formControl]="nameFormControl"
+    (keydown.enter)="onSubmit()"
+  />
+  <p-button
+    label="Rename"
+    [disabled]="!nameFormControl.valid"
+    (click)="onSubmit()"
+  ></p-button>
+</p-inputgroup>
+
+@if (nameFormControl.errors && nameFormControl.errors["duplicate"]) {
+  <small class="invalid">A property with this name already exists</small>
+}

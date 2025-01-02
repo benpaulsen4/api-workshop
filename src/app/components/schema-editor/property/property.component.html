@@ -11,12 +11,23 @@
     </p-message>
   }
 
+  <div class="h-divider"></div>
+
+  <p-button
+    link="true"
+    class="prop-action"
+    styleClass="link-button"
+    size="small"
+    (click)="rename.toggle($event)"
+    >Rename</p-button
+  >
+
   <p-button
     link="true"
     class="prop-action"
     styleClass="link-button danger"
     size="small"
-    (click)="onPropertyDeleted()"
+    (click)="onDeleteProperty()"
     >Delete</p-button
   >
 </div>
@@ -25,15 +36,16 @@
   <div class="child">
     @for (prop of childProperties(); track prop.name) {
       <app-property
-        (propertyUpdated)="onChildPropertyUpdated($event)"
+        [existingPropertyNames]="childPropertyNames"
         [property]="prop"
+        (propertyUpdated)="onChildPropertyUpdated($event)"
       ></app-property>
     }
 
     @if (canAddChildProperties()) {
       @if (addMode()) {
         <app-add-property
-          [existingPropertyNames]="propertyNames"
+          [existingPropertyNames]="childPropertyNames"
           (propertyAdded)="onChildPropertyAdded($event)"
           (stoppedAddingProperties)="addMode.set(false)"
         ></app-add-property>
@@ -49,3 +61,10 @@
     }
   </div>
 }
+
+<p-popover #rename>
+  <app-rename-property
+    [existingPropertyNames]="existingPropertyNames()"
+    (renameComplete)="onRenameProperty($event)"
+  ></app-rename-property>
+</p-popover>

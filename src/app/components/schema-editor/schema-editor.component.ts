@@ -10,14 +10,30 @@ import { PropertyComponent } from './property/property.component';
 import { AddSchemaProperty, EditAction } from '../../models/edit-actions';
 import { BehaviorSubject, map } from 'rxjs';
 import { MessageService } from 'primeng/api';
+import { PluralPipe } from '../../pipes/plural.pipe';
+import { DatePipe } from '@angular/common';
+import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 
 @Component({
   selector: 'app-schema-editor',
   standalone: true,
-  imports: [Toolbar, Button, Tooltip, AddPropertyComponent, PropertyComponent],
+  imports: [
+    Toolbar,
+    Button,
+    Tooltip,
+    AddPropertyComponent,
+    PropertyComponent,
+    PluralPipe,
+    DatePipe,
+    TimeAgoPipe,
+  ],
   providers: [EditStateService],
   templateUrl: './schema-editor.component.html',
   styleUrl: './schema-editor.component.scss',
+  host: {
+    '(window:keydown.control.z)': 'onUndo()',
+    '(window:keydown.control.y)': 'onRedo()',
+  },
 })
 export class SchemaEditorComponent implements OnInit {
   readonly schemaId = input.required<string>();
@@ -58,6 +74,7 @@ export class SchemaEditorComponent implements OnInit {
   }
 
   onUndo() {
+    if (!this.canUndo()) return;
     const change = this.editStateService.undoEdit();
     this.messageService.add({
       severity: 'secondary',
@@ -67,6 +84,7 @@ export class SchemaEditorComponent implements OnInit {
   }
 
   onRedo() {
+    if (!this.canRedo()) return;
     const change = this.editStateService.redoEdit();
     this.messageService.add({
       severity: 'secondary',
