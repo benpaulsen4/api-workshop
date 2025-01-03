@@ -37,6 +37,7 @@
     @for (prop of childProperties(); track prop.name) {
       <app-property
         [existingPropertyNames]="childPropertyNames"
+        [existingSchemaLookup]="existingSchemaLookup()"
         [property]="prop"
         (propertyUpdated)="onChildPropertyUpdated($event)"
       ></app-property>
@@ -46,6 +47,7 @@
       @if (addMode()) {
         <app-add-property
           [existingPropertyNames]="childPropertyNames"
+          [existingSchemaLookup]="existingSchemaLookup()"
           (propertyAdded)="onChildPropertyAdded($event)"
           (stoppedAddingProperties)="addMode.set(false)"
         ></app-add-property>

@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   Injector,
   input,
   OnInit,
@@ -16,10 +17,11 @@ import { InputGroup } from 'primeng/inputgroup';
 import { InputText } from 'primeng/inputtext';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomValidators } from '../../utilities/custom-validators';
-import { map, Observable } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { map, Observable, Subject, takeUntil } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AsyncPipe } from '@angular/common';
 import { NamedEntity } from '../../models/named-entity';
+import { NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-entity-panel',
@@ -41,7 +43,6 @@ import { NamedEntity } from '../../models/named-entity';
 export class EntityPanelComponent implements OnInit {
   readonly entityName = input<string>();
   readonly items = input<Observable<NamedEntity[]>>();
-  readonly selectedItem = input<string | undefined>();
 
   readonly create = output<string>();
   readonly itemClick = output<string>();
@@ -59,8 +60,14 @@ export class EntityPanelComponent implements OnInit {
 
   nameControl!: FormControl<string | null>;
   readonly activeMenuItemId = signal<string | undefined>(undefined);
+  readonly selectedItem = signal<string | undefined>(undefined);
+  readonly resetNavSubscription = new Subject<void>();
 
-  constructor(private injector: Injector) {}
+  constructor(
+    private injector: Injector,
+    private router: Router,
+    private destroyRef: DestroyRef,
+  ) {}
 
   ngOnInit(): void {
     this.nameControl = new FormControl<string>('', [
@@ -72,6 +79,19 @@ export class EntityPanelComponent implements OnInit {
         }),
       ),
     ]);
+
+    //todo pretty hacky method of determining selected item
+    this.router.events
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        if (!(event instanceof NavigationEnd)) return;
+
+        this.resetNavSubscription.next();
+
+        this.subscribeToNavChanges();
+      });
+
+    this.subscribeToNavChanges();
   }
 
   onOpenActionMenu(itemId: string, menu: Menu, event: Event) {
@@ -85,7 +105,23 @@ export class EntityPanelComponent implements OnInit {
 
     this.create.emit(this.nameControl.value!);
     popover.hide();
-    this.nameControl.setValue('');
-    this.nameControl.markAsPristine();
+    this.nameControl.reset();
+  }
+
+  private subscribeToNavChanges() {
+    this.router.routerState.root.firstChild?.params
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        takeUntil(this.resetNavSubscription),
+      )
+      .subscribe((params) => {
+        const idMatch = Object.entries(params).filter(
+          (p) => p[0].toLowerCase().includes('id') && !!p[1],
+        )[0];
+
+        if (idMatch) {
+          this.selectedItem.set(idMatch[1]);
+        }
+      });
   }
 }

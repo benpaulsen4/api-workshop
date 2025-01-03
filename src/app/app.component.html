@@ -1,18 +1,19 @@
 @if (loading()) {
-  loading
+  loading...
 } @else {
-  <app-entity-panel
-    entityName="schema"
-    [items]="items"
-    [selectedItem]="selectedItem()"
-    (itemClick)="onSelect($event)"
-    (create)="onCreate($event)"
-    (delete)="onDelete($event)"
-  ></app-entity-panel>
+  <nav>
+    <app-entity-panel
+      entityName="schema"
+      [items]="items"
+      (itemClick)="onSelect($event)"
+      (create)="onCreate($event)"
+      (delete)="onDelete($event)"
+    ></app-entity-panel>
+  </nav>
 
-  @if (selectedItem()) {
-    <app-schema-editor [schemaId]="selectedItem()!"></app-schema-editor>
-  }
+  <div class="h-divider"></div>
+
+  <router-outlet></router-outlet>
 }
 
 <p-toast position="top-right" life="5000"></p-toast>

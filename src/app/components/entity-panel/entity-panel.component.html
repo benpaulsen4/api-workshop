@@ -14,7 +14,7 @@
     </div>
   </ng-template>
   @for (item of items() | async; track item.id) {
-    <div
+    <button
       class="panel-item hover"
       [class.selected]="
         item.id === selectedItem() || item.id === activeMenuItemId()
@@ -31,7 +31,7 @@
         showDelay="500"
         (click)="onOpenActionMenu(item.id, actionMenu, $event); (true)"
       ></p-button>
-    </div>
+    </button>
   } @empty {
     <div class="empty">
       <i class="pi pi-search"></i>

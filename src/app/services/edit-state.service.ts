@@ -9,22 +9,25 @@ import { DataCollections, DataService } from './data.service';
 import { RxCollection } from 'rxdb';
 import { NamedEntity } from '../models/named-entity';
 import { EditAction } from '../models/edit-actions';
-import { debounceTime, Subject } from 'rxjs';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Injectable()
 export class EditStateService {
   private collection?: RxCollection;
 
-  private undoStack: WritableSignal<EditAction[]> = signal([]);
-  private redoStack: WritableSignal<EditAction[]> = signal([]);
-  private saveEdit = new Subject<void>();
+  private readonly saveEdit = new Subject<void>();
+  private readonly entityChanged = new Subject<void>();
+  private readonly undoStack: WritableSignal<EditAction[]> = signal([]);
+  private readonly redoStack: WritableSignal<EditAction[]> = signal([]);
 
-  entity = signal<NamedEntity | undefined>(undefined);
-  saveState = signal<'noChange' | 'unsaved' | 'saving' | 'saved'>('noChange');
+  readonly entity = signal<NamedEntity | undefined>(undefined);
+  readonly saveState = signal<'noChange' | 'unsaved' | 'saving' | 'saved'>(
+    'noChange',
+  );
 
-  canUndo = computed(() => !!this.undoStack().length);
-  canRedo = computed(() => !!this.redoStack().length);
+  readonly canUndo = computed(() => !!this.undoStack().length);
+  readonly canRedo = computed(() => !!this.redoStack().length);
 
   constructor(
     private dataService: DataService,
@@ -37,6 +40,17 @@ export class EditStateService {
 
   async initialize(id: string) {
     if (!this.collection) throw new Error('Select a collection first');
+
+    this.entityChanged.next();
+    if (this.saveState() === 'unsaved') {
+      await this.saveInternal();
+    }
+
+    this.entity.set(undefined);
+    this.saveState.set('noChange');
+    this.undoStack.set([]);
+    this.redoStack.set([]);
+
     this.entity.set(
       (
         await this.collection.findOne({ selector: { id: { $eq: id } } }).exec()
@@ -46,15 +60,12 @@ export class EditStateService {
     if (!this.entity()) throw new Error('Entity not found');
 
     this.saveEdit
-      .pipe(takeUntilDestroyed(this.destroyRef), debounceTime(1000))
-      .subscribe(async () => {
-        if (!this.collection || !this.entity())
-          throw new Error('Cannot save: uninitialized');
-
-        this.saveState.set('saving');
-        await this.collection.upsert(structuredClone(this.entity()!));
-        this.saveState.set('saved');
-      });
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        takeUntil(this.entityChanged),
+        debounceTime(1000),
+      )
+      .subscribe(this.saveInternal.bind(this));
   }
 
   addEdit(action: EditAction) {
@@ -135,5 +146,14 @@ export class EditStateService {
     this.saveEdit.next();
 
     return lastUndo.describe();
+  }
+
+  private async saveInternal() {
+    if (!this.collection || !this.entity())
+      throw new Error('Cannot save: uninitialized');
+
+    this.saveState.set('saving');
+    await this.collection.upsert(structuredClone(this.entity()!));
+    this.saveState.set('saved');
   }
 }

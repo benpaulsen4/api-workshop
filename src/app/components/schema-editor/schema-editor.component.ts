@@ -1,9 +1,16 @@
-import { Component, computed, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { Button } from 'primeng/button';
 import { Toolbar } from 'primeng/toolbar';
 import { Tooltip } from 'primeng/tooltip';
 import { EditStateService } from '../../services/edit-state.service';
-import { DataCollections } from '../../services/data.service';
+import { DataCollections, DataService } from '../../services/data.service';
 import { AddPropertyComponent } from './add-property/add-property.component';
 import { Property, Schema } from '../../models/schema';
 import { PropertyComponent } from './property/property.component';
@@ -38,6 +45,16 @@ import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 export class SchemaEditorComponent implements OnInit {
   readonly schemaId = input.required<string>();
 
+  readonly idChanged = effect(() => {
+    if (this.schemaId() === this.schema()?.id) return;
+    this.loading.set(true);
+
+    this.editStateService.initialize(this.schemaId()).then(() => {
+      this.propertiesSubject.next(this.schema().properties);
+      this.loading.set(false);
+    });
+  });
+
   readonly schema = computed(() => this.editStateService.entity() as Schema);
   readonly saveState = computed(() => this.editStateService.saveState());
   readonly canUndo = computed(() => this.editStateService.canUndo());
@@ -50,17 +67,26 @@ export class SchemaEditorComponent implements OnInit {
   readonly loading = signal(true);
   readonly addMode = signal(false);
 
+  allSchemaLookup!: Record<string, string>;
+
   constructor(
     private editStateService: EditStateService,
+    private dataService: DataService,
     private messageService: MessageService,
   ) {}
 
   ngOnInit(): void {
     this.editStateService.selectCollection(DataCollections.Schemas);
-    this.editStateService.initialize(this.schemaId()).then(() => {
-      this.loading.set(false);
-      this.propertiesSubject.next(this.schema().properties);
-    });
+    this.dataService
+      .getCollection(DataCollections.Schemas)
+      .find()
+      .exec()
+      .then((allSchemas) => {
+        this.allSchemaLookup = allSchemas.reduce((a, b) => {
+          a[b.name] = b.id;
+          return a;
+        }, {});
+      });
   }
 
   onPropertyAdded(prop: Property) {

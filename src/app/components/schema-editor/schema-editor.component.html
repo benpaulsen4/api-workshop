@@ -62,6 +62,7 @@
     @for (prop of schema().properties; track prop.name) {
       <app-property
         [existingPropertyNames]="propertyNames"
+        [existingSchemaLookup]="allSchemaLookup"
         [property]="prop"
         (propertyUpdated)="onPropertyUpdated($event)"
       ></app-property>
@@ -70,6 +71,7 @@
     @if (addMode()) {
       <app-add-property
         [existingPropertyNames]="propertyNames"
+        [existingSchemaLookup]="allSchemaLookup"
         (propertyAdded)="onPropertyAdded($event)"
         (stoppedAddingProperties)="addMode.set(false)"
       ></app-add-property>
