@@ -1,4 +1,11 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { Button } from 'primeng/button';
 import {
   ArrayOptions,
@@ -21,6 +28,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { map, Observable } from 'rxjs';
 import { RenamePropertyComponent } from '../rename-property/rename-property.component';
 import { Popover } from 'primeng/popover';
+import { RetypePropertyComponent } from '../retype-property/retype-property.component';
 
 @Component({
   selector: 'app-property',
@@ -32,6 +40,7 @@ import { Popover } from 'primeng/popover';
     Tooltip,
     RenamePropertyComponent,
     Popover,
+    RetypePropertyComponent,
   ],
   templateUrl: './property.component.html',
   styleUrl: './property.component.scss',
@@ -42,6 +51,8 @@ export class PropertyComponent {
   readonly existingPropertyNames = input<Observable<string[]>>();
 
   readonly propertyUpdated = output<EditAction>();
+
+  readonly retypePopup = viewChild<Popover>('retype');
 
   readonly typeString = computed(() => this.getTypeString(this.property()));
 
@@ -108,6 +119,13 @@ export class PropertyComponent {
     const clone = structuredClone(this.property());
     clone.name = newName;
     this.propertyUpdated.emit(new UpdateSchemaProperty(this.property(), clone));
+  }
+
+  onRetypeProperty(newProperty: Property) {
+    this.propertyUpdated.emit(
+      new UpdateSchemaProperty(this.property(), newProperty),
+    );
+    this.retypePopup()?.hide();
   }
 
   getTypeString(prop: Property): string {

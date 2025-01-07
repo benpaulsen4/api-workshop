@@ -47,7 +47,7 @@ export interface ArrayOptions {
 }
 
 export interface EnumOptions {
-  enumType: 'string' | 'int';
+  enumType: 'string' | 'int' | 'ref';
   values: Record<string | number, string>;
 }
 

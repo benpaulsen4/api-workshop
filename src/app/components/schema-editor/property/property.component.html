@@ -1,6 +1,10 @@
 <div class="info">
-  <span class="name">{{ property().name }}</span>
-  <span class="type">:{{ typeString() }}</span>
+  <button class="unstyled name" (click)="rename.toggle($event)">
+    {{ property().name }}
+  </button>
+  <button class="unstyled type" (click)="retype.toggle($event)">
+    :{{ typeString() }}
+  </button>
 
   @if (showArrayOfArrayWarning()) {
     <p-message size="small" severity="warn" icon="pi pi-exclamation-triangle">
@@ -12,15 +16,6 @@
   }
 
   <div class="h-divider"></div>
-
-  <p-button
-    link="true"
-    class="prop-action"
-    styleClass="link-button"
-    size="small"
-    (click)="rename.toggle($event)"
-    >Rename</p-button
-  >
 
   <p-button
     link="true"
@@ -69,4 +64,12 @@
     [existingPropertyNames]="existingPropertyNames()"
     (renameComplete)="onRenameProperty($event)"
   ></app-rename-property>
+</p-popover>
+
+<p-popover #retype>
+  <app-retype-property
+    [existingSchemaLookup]="existingSchemaLookup()"
+    [existingProperty]="property()"
+    (retypeComplete)="onRetypeProperty($event)"
+  ></app-retype-property>
 </p-popover>

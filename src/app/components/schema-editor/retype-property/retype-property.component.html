@@ -1,0 +1,18 @@
+<p-inputgroup>
+  <p-auto-complete
+    #type
+    placeholder="Type"
+    completeOnFocus="true"
+    autoOptionFocus="true"
+    autoHighlight="true"
+    [formControl]="typeFormControl"
+    [suggestions]="typeaheadSuggestions"
+    (completeMethod)="onTypeahead($event)"
+    (keydown.enter)="onSubmit()"
+  />
+  <p-button label="Change Type" (click)="onSubmit()"></p-button>
+</p-inputgroup>
+
+@if (showTypeError()) {
+  <small class="invalid">The type entered is invalid</small>
+}

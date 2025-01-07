@@ -15,7 +15,7 @@
   </ng-template>
   @for (item of items() | async; track item.id) {
     <button
-      class="panel-item hover"
+      class="unstyled panel-item hover"
       [class.selected]="
         item.id === selectedItem() || item.id === activeMenuItemId()
       "

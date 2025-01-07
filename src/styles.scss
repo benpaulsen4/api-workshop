@@ -3,7 +3,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--p-text-color);
 }
 
@@ -17,7 +22,7 @@ kbd {
 }
 
 .flip-horizontal {
-transform: scaleX(-1)
+  transform: scaleX(-1);
 }
 
 .link-button {
@@ -34,3 +39,25 @@ transform: scaleX(-1)
   }
 }
 
+button.unstyled {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: unset;
+
+  &:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+//fix autocompletes in input groups
+.p-inputgroup > p-auto-complete {
+  display: flex;
+
+  input {
+    border-radius: 0;
+    border-start-start-radius: var(--p-inputgroup-addon-border-radius);
+    border-end-start-radius: var(--p-inputgroup-addon-border-radius);
+  }
+}
