@@ -1,0 +1,46 @@
+<input
+  #name
+  pInputText
+  placeholder="Name"
+  [formControl]="nameFormControl"
+  (keydown)="onNameKeydown($event)"
+  (blur)="onBlur()"
+/>
+=
+<input
+  pInputText
+  placeholder="Value"
+  [formControl]="valueFormControl"
+  (keydown)="onValueKeydown($event)"
+  (blur)="onBlur()"
+/>
+
+@if (nameFormControl.invalid) {
+  @for (error of errorCodesOf(nameFormControl.errors); track error) {
+    <p-message severity="error" icon="pi pi-times-circle">
+      @switch (error) {
+        @case ("required") {
+          A name is required
+        }
+        @case ("duplicate") {
+          An entry with this name already exists
+        }
+      }
+    </p-message>
+  }
+}
+
+@if (valueFormControl.invalid) {
+  @for (error of errorCodesOf(valueFormControl.errors); track error) {
+    <p-message severity="error" icon="pi pi-times-circle">
+      @switch (error) {
+        @case ("required") {
+          A value is required
+        }
+        @case ("duplicate") {
+          An entry with this value already exists
+        }
+      }
+    </p-message>
+  }
+}

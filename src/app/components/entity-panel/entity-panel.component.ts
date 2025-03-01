@@ -80,7 +80,7 @@ export class EntityPanelComponent implements OnInit {
       ),
     ]);
 
-    //todo pretty hacky method of determining selected item
+    //HACK pretty hacky method of determining selected item
     this.router.events
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((event) => {

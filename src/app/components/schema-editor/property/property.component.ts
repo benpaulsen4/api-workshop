@@ -71,7 +71,7 @@ export class PropertyComponent {
       ((this.property().options as ArrayOptions)?.childOptions as ObjectOptions)
         ?.childProperties ??
       []
-    ); //todo return props for refs
+    ); //TODO return props for refs
   });
   readonly canAddChildProperties = computed(
     () =>

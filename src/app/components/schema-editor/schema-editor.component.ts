@@ -60,7 +60,7 @@ export class SchemaEditorComponent implements OnInit {
   readonly canUndo = computed(() => this.editStateService.canUndo());
   readonly canRedo = computed(() => this.editStateService.canRedo());
 
-  readonly propertiesSubject = new BehaviorSubject<Property[]>([]); //todo temporary solution for signals shitty change detection on ref types (mostly arrays)
+  readonly propertiesSubject = new BehaviorSubject<Property[]>([]); //HACK temporary solution for signals shitty change detection on ref types (mostly arrays)
   readonly propertyNames = this.propertiesSubject.pipe(
     map((a) => a.map((p) => p.name)),
   );

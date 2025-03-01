@@ -1,3 +1,4 @@
+import { EnumEntry } from './enum';
 import { NamedEntity } from './named-entity';
 
 export interface Schema extends NamedEntity {
@@ -48,7 +49,7 @@ export interface ArrayOptions {
 
 export interface EnumOptions {
   enumType: 'string' | 'int' | 'ref';
-  values: Record<string | number, string>;
+  values: EnumEntry[];
 }
 
 export const SchemaSchema = {

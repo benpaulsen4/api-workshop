@@ -1,0 +1,34 @@
+<div class="info">
+  <button class="unstyled name" (click)="rename.toggle($event)">
+    {{ entry().name }}
+  </button>
+  <span class="value" (click)="revalue.toggle($event)">
+    = {{ entry().value }}
+  </span>
+
+  <div class="h-divider"></div>
+
+  <p-button
+    link="true"
+    class="entry-action"
+    styleClass="link-button danger"
+    size="small"
+    (click)="onDeleteEntry()"
+    >Delete</p-button
+  >
+</div>
+
+<p-popover #rename>
+  <app-rename-entry
+    [existingEntryNames]="existingEntryNames()"
+    (renameComplete)="onRenameEntry($event)"
+  ></app-rename-entry>
+</p-popover>
+
+<p-popover #revalue>
+  <app-revalue-entry
+    [enumType]="enumType()"
+    [existingEntryValues]="existingEntryValues()"
+    (revalueComplete)="onUpdateValue($event)"
+  ></app-revalue-entry>
+</p-popover>

@@ -1,0 +1,17 @@
+<p-inputgroup>
+  <input
+    pInputText
+    [placeholder]="enumType() === 'int' ? 'Number value' : 'String value'"
+    [formControl]="valueFormControl"
+    (keydown.enter)="onSubmit()"
+  />
+  <p-button
+    label="Update Value"
+    [disabled]="!valueFormControl.valid"
+    (click)="onSubmit()"
+  ></p-button>
+</p-inputgroup>
+
+@if (valueFormControl.errors && valueFormControl.errors["duplicate"]) {
+  <small class="invalid">An entry with this name already exists</small>
+}
