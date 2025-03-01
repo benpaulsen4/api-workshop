@@ -20,6 +20,7 @@ import { EnumEntry } from '../../../models/enum';
 import { EMPTY, firstValueFrom, Observable } from 'rxjs';
 import { CustomValidators } from '../../../utilities/custom-validators';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { StringUtils } from '../../../utilities/string-utils';
 
 @Component({
   selector: 'app-add-enum-entry',
@@ -81,15 +82,18 @@ export class AddEnumEntryComponent implements OnInit {
       //assume value if not set
       if (!this.valueFormControl.value) {
         if (this.enumType() === 'string') {
-          this.valueFormControl.setValue(this.nameFormControl.value);
+          this.valueFormControl.setValue(
+            StringUtils.toCamelCase(this.nameFormControl.value!),
+          );
         } else {
           const index = !!this.existingEntryValues()
             ? (await firstValueFrom(this.existingEntryValues()!)).length
             : Math.random() * 1000;
           this.valueFormControl.setValue(index.toString());
         }
-        this.onSubmit();
       }
+
+      this.onSubmit();
     } else if (event.key === 'Escape') {
       this.stoppedAddingEntries.emit();
     }
