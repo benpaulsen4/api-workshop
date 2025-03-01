@@ -2,9 +2,9 @@
   <button class="unstyled name" (click)="rename.toggle($event)">
     {{ entry().name }}
   </button>
-  <span class="value" (click)="revalue.toggle($event)">
-    = {{ entry().value }}
-  </span>
+  <button class="unstyled value" (click)="revalue.toggle($event)">
+    ={{ entry().value }}
+  </button>
 
   <div class="h-divider"></div>
 

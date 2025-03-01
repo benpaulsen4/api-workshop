@@ -9,7 +9,8 @@
   @if (showArrayOfArrayWarning()) {
     <p-message size="small" severity="warn" icon="pi pi-exclamation-triangle">
       Arrays of arrays are not fully supported.
-      <u pTooltip="Certain features like the inline object editor will not work"
+      <u
+        pTooltip="Certain features like the inline object/enum editor will not work"
         >What does this mean?</u
       >
     </p-message>
@@ -49,6 +50,40 @@
       } @else {
         <p-button
           label="Add Property"
+          class="add-prop-button"
+          icon="pi pi-plus"
+          size="small"
+          (click)="addMode.set(true)"
+        ></p-button>
+      }
+    }
+  </div>
+}
+
+@if (this.hasEnumValues()) {
+  <div class="child">
+    @for (value of enumValues(); track value.name) {
+      <app-enum-entry
+        [entry]="value"
+        [enumType]="enumType()"
+        [existingEntryNames]="enumValueNames"
+        [existingEntryValues]="enumValueKeys"
+        (entryUpdated)="onEnumEntryUpdated($event)"
+      ></app-enum-entry>
+    }
+
+    @if (canAddEnumValues()) {
+      @if (addMode()) {
+        <app-add-enum-entry
+          [enumType]="enumType()"
+          [existingEntryNames]="enumValueNames"
+          [existingEntryValues]="enumValueKeys"
+          (entryAdded)="onEnumEntryAdded($event)"
+          (stoppedAddingEntries)="addMode.set(false)"
+        ></app-add-enum-entry>
+      } @else {
+        <p-button
+          label="Add Entry"
           class="add-prop-button"
           icon="pi pi-plus"
           size="small"

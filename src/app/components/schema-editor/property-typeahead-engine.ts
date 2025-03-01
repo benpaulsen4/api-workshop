@@ -342,7 +342,7 @@ export class PropertyTypeaheadEngine {
         case PropertyType.Enum:
           property.options = {
             enumType: parseResult.qualifier,
-            values: {},
+            values: [],
           } as EnumOptions;
           break;
       }

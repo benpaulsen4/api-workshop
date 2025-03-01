@@ -1,4 +1,11 @@
-import { Component, inject, Injector, input, output } from '@angular/core';
+import {
+  Component,
+  inject,
+  Injector,
+  input,
+  OnInit,
+  output,
+} from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { InputGroup } from 'primeng/inputgroup';
@@ -12,25 +19,36 @@ import { toSignal } from '@angular/core/rxjs-interop';
   standalone: true,
   imports: [ReactiveFormsModule, Button, InputGroup, InputText],
   templateUrl: './revalue-entry.component.html',
-  styleUrl: './revalue-entry.component.scss'
+  styleUrl: './revalue-entry.component.scss',
 })
-export class RevalueEntryComponent {
+export class RevalueEntryComponent implements OnInit {
   readonly enumType = input.required<'string' | 'int'>();
   readonly existingEntryValues = input<Observable<(string | number)[]>>();
   readonly revalueComplete = output<string | number>();
 
-  readonly valueFormControl = new FormControl('', {
-    validators: [Validators.required,
-      CustomValidators.noDuplicates(toSignal(this.existingEntryValues() ?? EMPTY, {injector: inject(Injector)}))
-    ]
-  });
+  valueFormControl!: FormControl<string | null>;
+
+  constructor(private injector: Injector) {}
+
+  ngOnInit(): void {
+    this.valueFormControl = new FormControl('', {
+      validators: [
+        Validators.required,
+        CustomValidators.noDuplicates(
+          toSignal(this.existingEntryValues() ?? EMPTY, {
+            injector: this.injector,
+          }),
+        ),
+      ],
+    });
+  }
 
   onSubmit() {
     if (!this.valueFormControl.valid) return;
 
     const value = this.valueFormControl.value!;
     this.revalueComplete.emit(
-      this.enumType() === 'int' ? parseInt(value) : value
+      this.enumType() === 'int' ? parseInt(value) : value,
     );
   }
 }

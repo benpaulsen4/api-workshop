@@ -29,6 +29,9 @@ import { map, Observable } from 'rxjs';
 import { RenamePropertyComponent } from '../rename-property/rename-property.component';
 import { Popover } from 'primeng/popover';
 import { RetypePropertyComponent } from '../retype-property/retype-property.component';
+import { EnumEntryComponent } from '../../enum-editor/enum-entry/enum-entry.component';
+import { AddEnumEntryComponent } from '../../enum-editor/add-enum-entry/add-enum-entry.component';
+import { EnumEntry } from '../../../models/enum';
 
 @Component({
   selector: 'app-property',
@@ -41,6 +44,8 @@ import { RetypePropertyComponent } from '../retype-property/retype-property.comp
     RenamePropertyComponent,
     Popover,
     RetypePropertyComponent,
+    EnumEntryComponent,
+    AddEnumEntryComponent,
   ],
   templateUrl: './property.component.html',
   styleUrl: './property.component.scss',
@@ -80,14 +85,56 @@ export class PropertyComponent {
       ((this.property().options as ArrayOptions)?.childOptions as ObjectOptions)
         ?.objectType === 'inline',
   );
+  readonly childPropertyNames = toObservable(this.childProperties).pipe(
+    map((a) => a.map((p) => p.name)),
+  );
+
+  readonly hasEnumValues = computed(
+    () =>
+      this.property().type === PropertyType.Enum ||
+      (this.property().type === PropertyType.Array &&
+        (this.property().options as ArrayOptions)?.childType ===
+          PropertyType.Enum),
+  );
+  readonly enumValues = computed(() => {
+    if (!this.hasEnumValues()) return [];
+
+    return (
+      (this.property().options as EnumOptions)?.values ??
+      ((this.property().options as ArrayOptions)?.childOptions as EnumOptions)
+        ?.values ??
+      []
+    ); //TODO return values for refs
+  });
+  readonly canAddEnumValues = computed(
+    () =>
+      (this.hasEnumValues() &&
+        (this.property().options as EnumOptions)?.enumType !== 'ref') ||
+      ((this.property().options as ArrayOptions)?.childOptions as EnumOptions)
+        ?.enumType !== 'ref',
+  );
+  readonly enumValueNames = toObservable(this.enumValues).pipe(
+    map((a) => a.map((p) => p.name)),
+  );
+  readonly enumValueKeys = toObservable(this.enumValues).pipe(
+    map((a) => a.map((p) => p.value)),
+  );
+  //TODO when ref enums added need to pass the type down
+  readonly enumType = computed(() => {
+    const type = (this.property().options as EnumOptions)?.enumType;
+
+    if (type === 'ref') {
+      return 'string';
+    } else {
+      return type;
+    }
+  });
+
   readonly showArrayOfArrayWarning = computed(
     () =>
       this.property().type === PropertyType.Array &&
       (this.property().options as ArrayOptions)?.childType ===
         PropertyType.Array,
-  );
-  readonly childPropertyNames = toObservable(this.childProperties).pipe(
-    map((a) => a.map((p) => p.name)),
   );
 
   readonly addMode = signal(false);
@@ -108,6 +155,25 @@ export class PropertyComponent {
   }
 
   onChildPropertyUpdated(edit: EditAction) {
+    this.propertyUpdated.emit(new UpdateChildProperty(this.property(), edit));
+  }
+
+  onEnumEntryAdded(entry: EnumEntry) {
+    if (!this.canAddEnumValues()) return;
+
+    const clone = structuredClone(this.property());
+
+    if (this.property().type === PropertyType.Enum) {
+      (clone.options as EnumOptions).values!.push(entry);
+    } else if (this.property().type === PropertyType.Array) {
+      (
+        (clone.options as ArrayOptions)!.childOptions as EnumOptions
+      ).values!.push(entry);
+    }
+    this.propertyUpdated.emit(new UpdateSchemaProperty(this.property(), clone));
+  }
+
+  onEnumEntryUpdated(edit: EditAction) {
     this.propertyUpdated.emit(new UpdateChildProperty(this.property(), edit));
   }
 

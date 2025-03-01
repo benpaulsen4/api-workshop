@@ -110,7 +110,7 @@ export class AddPropertyComponent implements OnInit {
   }
 
   onBlur() {
-    if (this.nameFormControl.pristine && this.typeFormControl.pristine) {
+    if (!this.nameFormControl.value && !this.typeFormControl.value) {
       this.stoppedAddingProperties.emit();
     }
   }

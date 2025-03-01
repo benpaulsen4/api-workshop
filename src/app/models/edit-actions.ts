@@ -1,6 +1,8 @@
+import { Enum, EnumEntry } from './enum';
 import { NamedEntity } from './named-entity';
 import {
   ArrayOptions,
+  EnumOptions,
   ObjectOptions,
   Property,
   PropertyType,
@@ -32,6 +34,7 @@ export class UpdateName implements EditAction {
   }
 }
 
+//SCHEMA SECTION
 export class AddSchemaProperty implements EditAction {
   private index?: number;
 
@@ -140,6 +143,14 @@ export class UpdateChildProperty implements EditAction {
         properties: (clone.options as ObjectOptions).childProperties,
       } as Schema);
     } else if (
+      this.parent.type === PropertyType.Enum &&
+      (this.parent.options as EnumOptions)?.enumType !== 'ref'
+    ) {
+      clone = structuredClone(this.parent);
+      this.innerUpdate.apply({
+        values: (clone.options as EnumOptions).values,
+      } as Enum);
+    } else if (
       this.parent.type === PropertyType.Array &&
       ((this.parent.options as ArrayOptions)?.childOptions as ObjectOptions)
         ?.objectType === 'inline'
@@ -150,9 +161,19 @@ export class UpdateChildProperty implements EditAction {
           (clone.options as ArrayOptions).childOptions as ObjectOptions
         ).childProperties,
       } as Schema);
+    } else if (
+      this.parent.type === PropertyType.Array &&
+      ((this.parent.options as ArrayOptions)?.childOptions as EnumOptions)
+        ?.enumType !== 'ref'
+    ) {
+      clone = structuredClone(this.parent);
+      this.innerUpdate.apply({
+        values: ((clone.options as ArrayOptions).childOptions as EnumOptions)
+          .values,
+      } as Enum);
     } else {
       throw new Error(
-        'Cannot update child property as parent is not inline object or array of type inline object',
+        'Cannot update child property as parent is not inline object/enum or array of type inline object/enum',
       );
     }
 
@@ -181,6 +202,14 @@ export class UpdateChildProperty implements EditAction {
         properties: (clone.options as ObjectOptions).childProperties,
       } as Schema);
     } else if (
+      this.updatedParent.type === PropertyType.Enum &&
+      (this.updatedParent.options as EnumOptions)?.enumType !== 'ref'
+    ) {
+      clone = structuredClone(this.updatedParent);
+      this.innerUpdate.revert({
+        values: (clone.options as EnumOptions).values,
+      } as Enum);
+    } else if (
       this.updatedParent.type === PropertyType.Array &&
       (
         (this.updatedParent.options as ArrayOptions)
@@ -193,9 +222,21 @@ export class UpdateChildProperty implements EditAction {
           (clone.options as ArrayOptions).childOptions as ObjectOptions
         ).childProperties,
       } as Schema);
+    } else if (
+      this.updatedParent.type === PropertyType.Array &&
+      (
+        (this.updatedParent.options as ArrayOptions)
+          ?.childOptions as EnumOptions
+      )?.enumType !== 'ref'
+    ) {
+      clone = structuredClone(this.updatedParent);
+      this.innerUpdate.revert({
+        values: ((clone.options as ArrayOptions).childOptions as EnumOptions)
+          .values,
+      } as Enum);
     } else {
       throw new Error(
-        'Cannot revert update child property as parent is not inline object or array of type inline object',
+        'Cannot revert update child property as parent is not inline object/enum or array of type inline object/enum',
       );
     }
 
@@ -208,5 +249,94 @@ export class UpdateChildProperty implements EditAction {
 
   describe(): string {
     return `Updated child of '${this.updatedParent!.name}': ${this.innerUpdate.describe()}`;
+  }
+}
+
+//ENUM SECTION
+export class AddEnumEntry implements EditAction {
+  private index?: number;
+
+  constructor(private entry: EnumEntry) {}
+
+  apply<T>(currentState: T): void {
+    (currentState as Enum).values.push(this.entry);
+    this.index = (currentState as Enum).values.length - 1;
+  }
+
+  revert<T>(currentState: T): void {
+    if (this.index === undefined || this.index === -1) {
+      throw new Error(
+        'Cannot revert add enum entry as the entry was not found',
+      );
+    }
+
+    (currentState as Enum).values.splice(this.index, 1);
+  }
+
+  describe(): string {
+    return `Added enum entry '${this.entry.name}'`;
+  }
+}
+
+export class RemoveEnumEntry implements EditAction {
+  private index?: number;
+
+  constructor(private entry: EnumEntry) {}
+
+  apply<T>(currentState: T): void {
+    this.index = (currentState as Enum).values.findIndex(
+      (p) => p.name === this.entry.name,
+    );
+
+    if (this.index === undefined || this.index === -1)
+      throw new Error('Cannot remove enum entry as it was not found');
+
+    (currentState as Enum).values.splice(this.index, 1);
+  }
+
+  revert<T>(currentState: T): void {
+    if (this.index === undefined || this.index === -1)
+      throw new Error('Cannot revert remove enum entry as it was never found');
+
+    (currentState as Enum).values.splice(this.index, 0, this.entry);
+  }
+
+  describe(): string {
+    return `Removed enum entry '${this.entry.name}'`;
+  }
+}
+
+export class UpdateEnumEntry implements EditAction {
+  constructor(
+    private before: EnumEntry,
+    private after: EnumEntry,
+  ) {}
+
+  apply<T>(currentState: T): void {
+    const index = (currentState as Enum).values.findIndex(
+      (p) => p.name === this.before.name,
+    );
+
+    if (index === -1)
+      throw new Error('Cannot update enum entry as it was not found');
+
+    (currentState as Enum).values.splice(index, 1, this.after);
+  }
+
+  revert<T>(currentState: T): void {
+    const index = (currentState as Enum).values.findIndex(
+      (p) => p.name === this.after.name,
+    );
+
+    if (index === -1)
+      throw new Error(
+        'Cannot revert update enum entry as the entry was not found',
+      );
+
+    (currentState as Enum).values.splice(index, 1, this.before);
+  }
+
+  describe(): string {
+    return `Updated enum entry '${this.after.name}'`;
   }
 }

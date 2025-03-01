@@ -8,14 +8,16 @@
 />
 =
 <input
+  #value
   pInputText
   placeholder="Value"
+  [type]="enumType() === 'int' ? 'number' : 'text'"
   [formControl]="valueFormControl"
   (keydown)="onValueKeydown($event)"
   (blur)="onBlur()"
 />
 
-@if (nameFormControl.invalid) {
+@if (!nameFormControl.pristine) {
   @for (error of errorCodesOf(nameFormControl.errors); track error) {
     <p-message severity="error" icon="pi pi-times-circle">
       @switch (error) {
@@ -30,15 +32,15 @@
   }
 }
 
-@if (valueFormControl.invalid) {
+@if (!valueFormControl.pristine) {
   @for (error of errorCodesOf(valueFormControl.errors); track error) {
     <p-message severity="error" icon="pi pi-times-circle">
       @switch (error) {
         @case ("required") {
-          A value is required
+          A name is required
         }
         @case ("duplicate") {
-          An entry with this value already exists
+          An entry with this name already exists
         }
       }
     </p-message>
