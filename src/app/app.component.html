@@ -1,5 +1,7 @@
 @if (loading()) {
   loading...
+} @else if (error()) {
+  Error initializing database: {{ error() }}
 } @else {
   <nav>
     <app-entity-panel

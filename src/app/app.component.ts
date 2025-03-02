@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
   items!: Observable<NamedEntity[]>;
 
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   constructor(
     private dataService: DataService,
@@ -28,11 +29,17 @@ export class AppComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    from(this.dataService.initializeDatabase()).subscribe(() => {
-      this.loading.set(false);
-      this.items = this.dataService
-        .getCollection(DataCollections.Schemas)
-        .find().$;
+    from(this.dataService.initializeDatabase()).subscribe({
+      complete: () => {
+        this.loading.set(false);
+        this.items = this.dataService
+          .getCollection(DataCollections.Schemas)
+          .find().$;
+      },
+      error: (error) => {
+        this.loading.set(false);
+        this.error.set(error.message ?? error);
+      },
     });
   }
 
