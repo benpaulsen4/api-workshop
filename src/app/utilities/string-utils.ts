@@ -1,7 +1,12 @@
 export class StringUtils {
     static toCamelCase(str: string): string {
-        return str
-            .replace(/(?:^\w|[A-Z]|\b\w)/g, (letter, index) => 
+        // If string has no spaces, it might already be in camelCase format
+        if (!/\s/.test(str)) {
+            return str;
+        }
+        
+        return str.toLowerCase()
+            .replace(/(?:^|\s+)\w/g, (letter, index) => 
                 index === 0 ? letter.toLowerCase() : letter.toUpperCase()
             )
             .replace(/\s+/g, '');
