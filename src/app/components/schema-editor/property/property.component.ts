@@ -121,7 +121,10 @@ export class PropertyComponent {
   );
   //TODO when ref enums added need to pass the type down
   readonly enumType = computed(() => {
-    const type = (this.property().options as EnumOptions)?.enumType;
+    const type =
+      (this.property().options as EnumOptions)?.enumType ??
+      ((this.property().options as ArrayOptions)?.childOptions as EnumOptions)
+        ?.enumType;
 
     if (type === 'ref') {
       return 'string';
