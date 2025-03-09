@@ -20,6 +20,7 @@ import { MessageService } from 'primeng/api';
 import { PluralPipe } from '../../pipes/plural.pipe';
 import { DatePipe } from '@angular/common';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
+import { SchemaToJsonSchemaExportService } from '../../services/schema-to-json-schema-export.service';
 
 @Component({
   selector: 'app-schema-editor',
@@ -34,7 +35,7 @@ import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
     DatePipe,
     TimeAgoPipe,
   ],
-  providers: [EditStateService],
+  providers: [EditStateService, SchemaToJsonSchemaExportService],
   templateUrl: './schema-editor.component.html',
   styleUrl: './schema-editor.component.scss',
   host: {
@@ -73,6 +74,7 @@ export class SchemaEditorComponent implements OnInit {
     private editStateService: EditStateService,
     private dataService: DataService,
     private messageService: MessageService,
+    private exportService: SchemaToJsonSchemaExportService,
   ) {}
 
   ngOnInit(): void {
@@ -117,5 +119,9 @@ export class SchemaEditorComponent implements OnInit {
       summary: 'Redo',
       detail: `Redid: ${change}`,
     });
+  }
+
+  async onExportToJsonSchema() {
+    await this.exportService.export(this.schema());
   }
 }
