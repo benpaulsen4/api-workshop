@@ -5,7 +5,6 @@ import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { InputGroup } from 'primeng/inputgroup';
 import { BehaviorSubject } from 'rxjs';
-import { signal } from '@angular/core';
 
 describe('RenamePropertyComponent', () => {
   let component: RenamePropertyComponent;

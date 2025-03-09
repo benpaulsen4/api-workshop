@@ -3,7 +3,7 @@ import { PropertyComponent } from './property.component';
 import { BehaviorSubject } from 'rxjs';
 import { Property, PropertyType } from '../../../models/schema';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { signal, WritableSignal } from '@angular/core';
+import { signal } from '@angular/core';
 import {
   RemoveSchemaProperty,
   UpdateChildProperty,

@@ -6,8 +6,7 @@ import {
 } from '@angular/core/testing';
 import { AddPropertyComponent } from './add-property.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject, EMPTY } from 'rxjs';
-import { AutoComplete } from 'primeng/autocomplete';
+import { BehaviorSubject } from 'rxjs';
 
 describe('AddPropertyComponent', () => {
   let component: AddPropertyComponent;

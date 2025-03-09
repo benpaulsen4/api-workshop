@@ -1,4 +1,3 @@
-import { EditAction } from './edit-actions';
 import { UpdateName } from './edit-actions';
 import { AddSchemaProperty } from './edit-actions';
 import { RemoveSchemaProperty } from './edit-actions';

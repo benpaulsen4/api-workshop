@@ -4,8 +4,6 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class ContentDownloadService {
-  constructor() {}
-
   public downloadFromTextData(
     data: string,
     filename: string,

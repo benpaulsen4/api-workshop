@@ -1,6 +1,5 @@
 import {
   Component,
-  computed,
   ElementRef,
   Injector,
   input,
@@ -86,7 +85,7 @@ export class AddEnumEntryComponent implements OnInit {
             StringUtils.toCamelCase(this.nameFormControl.value!),
           );
         } else {
-          const index = !!this.existingEntryValues()
+          const index = this.existingEntryValues()
             ? (await firstValueFrom(this.existingEntryValues()!)).length
             : Math.random() * 1000;
           this.valueFormControl.setValue(index.toString());

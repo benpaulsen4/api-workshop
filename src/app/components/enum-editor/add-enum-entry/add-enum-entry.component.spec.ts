@@ -7,7 +7,6 @@ import {
 import { AddEnumEntryComponent } from './add-enum-entry.component';
 import { BehaviorSubject } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ElementRef } from '@angular/core';
 
 describe('AddEnumEntryComponent', () => {
   let component: AddEnumEntryComponent;

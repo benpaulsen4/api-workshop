@@ -39,7 +39,7 @@ export class SchemaToJsonSchemaExportService {
   private async convertSchema(
     schema: Schema,
     externalDefs: Record<string, any> | undefined = undefined,
-    includeMetaschemaTag: boolean = false,
+    includeMetaschemaTag = false,
   ): Promise<any> {
     const result = {
       $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -116,7 +116,7 @@ export class SchemaToJsonSchemaExportService {
             currentSchemaId,
           ),
         };
-      case PropertyType.Object:
+      case PropertyType.Object: {
         const objectOptions = property.options as ObjectOptions;
         if (objectOptions?.objectType === 'inline') {
           const result = {
@@ -152,7 +152,8 @@ export class SchemaToJsonSchemaExportService {
             $ref: await this.addDefReference(schema, defs),
           };
         }
-      case PropertyType.Enum:
+      }
+      case PropertyType.Enum: {
         const enumOptions = property.options as EnumOptions;
         if (enumOptions?.enumType === 'string') {
           return {
@@ -185,6 +186,7 @@ export class SchemaToJsonSchemaExportService {
         } else {
           throw new Error('Enum refs dont exist yet');
         }
+      }
       default:
         throw new Error('Unknown property type');
     }

@@ -3,7 +3,6 @@ import { EntityPanelComponent } from './entity-panel.component';
 import { BehaviorSubject } from 'rxjs';
 import { NamedEntity } from '../../models/named-entity';
 import { Router, NavigationEnd, Params } from '@angular/router';
-import { FormControl } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { signal } from '@angular/core';
 

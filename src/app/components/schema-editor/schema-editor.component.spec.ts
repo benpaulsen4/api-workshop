@@ -3,7 +3,6 @@ import { SchemaEditorComponent } from './schema-editor.component';
 import { EditStateService } from '../../services/edit-state.service';
 import { DataService } from '../../services/data.service';
 import { MessageService } from 'primeng/api';
-import { BehaviorSubject } from 'rxjs';
 import { Property, PropertyType, Schema } from '../../models/schema';
 import { AddSchemaProperty, EditAction } from '../../models/edit-actions';
 import { RxCollection } from 'rxdb';

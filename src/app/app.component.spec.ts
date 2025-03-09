@@ -5,14 +5,13 @@ import {
   tick,
 } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { DataService, DataCollections } from './services/data.service';
+import { DataService } from './services/data.service';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Schema } from './models/schema';
 import { Toast } from 'primeng/toast';
 import { EntityPanelComponent } from './components/entity-panel/entity-panel.component';
-import { RouterTestingModule } from '@angular/router/testing';
 
 describe('AppComponent', () => {
   let component: AppComponent;

@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { SchemaToJsonSchemaExportService } from './schema-to-json-schema-export.service';
 import { ContentDownloadService } from './content-download.service';
-import { DataService, DataCollections } from './data.service';
+import { DataService } from './data.service';
 import { PropertyType, Schema } from '../models/schema';
-import { RxCollection, RxQuery } from 'rxdb';
+import { RxCollection } from 'rxdb';
 
 describe('SchemaToJsonSchemaExportService', () => {
   let service: SchemaToJsonSchemaExportService;

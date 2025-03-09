@@ -1,4 +1,4 @@
-import { Component, computed, input, output, viewChild } from '@angular/core';
+import { Component, input, output, viewChild } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Popover } from 'primeng/popover';
 import { RenameEntryComponent } from '../rename-entry/rename-entry.component';

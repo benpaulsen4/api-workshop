@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EnumEntryComponent } from './enum-entry.component';
 import { BehaviorSubject } from 'rxjs';
-import { Popover } from 'primeng/popover';
 import { EnumEntry } from '../../../models/enum';
 import { RemoveEnumEntry, UpdateEnumEntry } from '../../../models/edit-actions';
 
@@ -13,7 +12,7 @@ describe('EnumEntryComponent', () => {
 
   const mockEntry: EnumEntry = {
     name: 'TestEntry',
-    value: 'testValue'
+    value: 'testValue',
   };
 
   beforeEach(async () => {
@@ -21,7 +20,7 @@ describe('EnumEntryComponent', () => {
     existingValues = new BehaviorSubject<(string | number)[]>(['existing']);
 
     await TestBed.configureTestingModule({
-      imports: [EnumEntryComponent]
+      imports: [EnumEntryComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EnumEntryComponent);
@@ -29,7 +28,8 @@ describe('EnumEntryComponent', () => {
     (component as any).entry = () => mockEntry;
     (component as any).enumType = () => 'string';
     (component as any).existingEntryNames = () => existingNames.asObservable();
-    (component as any).existingEntryValues = () => existingValues.asObservable();
+    (component as any).existingEntryValues = () =>
+      existingValues.asObservable();
     fixture.detectChanges();
   });
 
@@ -53,7 +53,7 @@ describe('EnumEntryComponent', () => {
 
     const expectedAction = new UpdateEnumEntry(mockEntry, {
       ...mockEntry,
-      name: newName
+      name: newName,
     });
     expect(updateSpy).toHaveBeenCalledWith(expectedAction);
   });
@@ -68,7 +68,7 @@ describe('EnumEntryComponent', () => {
 
     const expectedAction = new UpdateEnumEntry(mockEntry, {
       ...mockEntry,
-      value: newValue
+      value: newValue,
     });
     expect(updateSpy).toHaveBeenCalledWith(expectedAction);
     expect(mockPopover.hide).toHaveBeenCalled();
@@ -85,7 +85,7 @@ describe('EnumEntryComponent', () => {
 
     const expectedAction = new UpdateEnumEntry(mockEntry, {
       ...mockEntry,
-      value: newValue
+      value: newValue,
     });
     expect(updateSpy).toHaveBeenCalledWith(expectedAction);
   });
