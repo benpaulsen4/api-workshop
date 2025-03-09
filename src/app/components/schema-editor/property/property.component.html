@@ -18,6 +18,17 @@
 
   <div class="h-divider"></div>
 
+  @if (hasChildProperties() && !canAddChildProperties()) {
+    <p-button
+      link="true"
+      class="prop-action"
+      styleClass="link-button"
+      size="small"
+      (click)="onGoToReference()"
+      >Go to Reference</p-button
+    >
+  }
+
   <p-button
     link="true"
     class="prop-action"

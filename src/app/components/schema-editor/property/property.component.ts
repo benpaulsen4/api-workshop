@@ -32,6 +32,7 @@ import { RetypePropertyComponent } from '../retype-property/retype-property.comp
 import { EnumEntryComponent } from '../../enum-editor/enum-entry/enum-entry.component';
 import { AddEnumEntryComponent } from '../../enum-editor/add-enum-entry/add-enum-entry.component';
 import { EnumEntry } from '../../../models/enum';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-property',
@@ -142,6 +143,8 @@ export class PropertyComponent {
 
   readonly addMode = signal(false);
 
+  constructor(private router: Router) {}
+
   onChildPropertyAdded(prop: Property) {
     if (!this.canAddChildProperties()) return;
 
@@ -195,6 +198,15 @@ export class PropertyComponent {
       new UpdateSchemaProperty(this.property(), newProperty),
     );
     this.retypePopup()?.hide();
+  }
+
+  async onGoToReference() {
+    const refId =
+      (this.property().options as ObjectOptions)?.refId ??
+      ((this.property().options as ArrayOptions).childOptions as ObjectOptions)
+        .refId;
+    if (!refId) return;
+    await this.router.navigate(['schemas', refId]);
   }
 
   getTypeString(prop: Property): string {

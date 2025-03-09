@@ -21,6 +21,16 @@
   (blur)="onBlur()"
 />
 
+<p-button
+  label="Add"
+  class="add-prop-button"
+  icon="pi pi-check"
+  [disabled]="nameFormControl.invalid || typeFormControl.invalid"
+  (click)="onTypeEnterKeydown()"
+></p-button>
+
+<kbd>Enter</kbd>
+
 @if (nameFormControl.dirty) {
   @for (error of errorCodesOf(nameFormControl.errors); track error) {
     <p-message severity="error" icon="pi pi-times-circle">

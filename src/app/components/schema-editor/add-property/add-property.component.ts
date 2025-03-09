@@ -22,11 +22,12 @@ import { CustomValidators } from '../../../utilities/custom-validators';
 import { EMPTY, Observable } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Message } from 'primeng/message';
+import { Button } from 'primeng/button';
 
 @Component({
   selector: 'app-add-property',
   standalone: true,
-  imports: [AutoComplete, InputText, ReactiveFormsModule, Message],
+  imports: [AutoComplete, InputText, ReactiveFormsModule, Message, Button],
   templateUrl: './add-property.component.html',
   styleUrl: './add-property.component.scss',
 })
@@ -45,7 +46,7 @@ export class AddPropertyComponent implements OnInit {
   typeaheadSuggestions: string[] = [];
   typeaheadEngine?: PropertyTypeaheadEngine;
   nameFormControl!: FormControl<string | null>;
-  typeFormControl = new FormControl(''); //no validators as its validated manually on parse
+  typeFormControl = new FormControl('', Validators.required);
 
   constructor(private injector: Injector) {}
 

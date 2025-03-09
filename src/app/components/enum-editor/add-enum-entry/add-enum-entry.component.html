@@ -17,6 +17,16 @@
   (blur)="onBlur()"
 />
 
+<p-button
+  label="Add"
+  class="add-prop-button"
+  icon="pi pi-check"
+  [disabled]="nameFormControl.invalid || valueFormControl.invalid"
+  (click)="onAddClick()"
+></p-button>
+
+<kbd>Enter</kbd>
+
 @if (!nameFormControl.pristine) {
   @for (error of errorCodesOf(nameFormControl.errors); track error) {
     <p-message severity="error" icon="pi pi-times-circle">
@@ -36,11 +46,8 @@
   @for (error of errorCodesOf(valueFormControl.errors); track error) {
     <p-message severity="error" icon="pi pi-times-circle">
       @switch (error) {
-        @case ("required") {
-          A name is required
-        }
         @case ("duplicate") {
-          An entry with this name already exists
+          An entry with this value already exists
         }
       }
     </p-message>

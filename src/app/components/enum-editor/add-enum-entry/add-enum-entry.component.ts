@@ -20,11 +20,12 @@ import { EMPTY, firstValueFrom, Observable } from 'rxjs';
 import { CustomValidators } from '../../../utilities/custom-validators';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { StringUtils } from '../../../utilities/string-utils';
+import { Button } from 'primeng/button';
 
 @Component({
   selector: 'app-add-enum-entry',
   standalone: true,
-  imports: [ReactiveFormsModule, InputText, Message],
+  imports: [ReactiveFormsModule, InputText, Message, Button],
   templateUrl: './add-enum-entry.component.html',
   styleUrl: './add-enum-entry.component.scss',
 })
@@ -59,7 +60,6 @@ export class AddEnumEntryComponent implements OnInit {
 
     this.valueFormControl = new FormControl('', {
       validators: [
-        Validators.required,
         CustomValidators.noDuplicates(
           toSignal(this.existingEntryValues() ?? EMPTY, {
             injector: this.injector,
@@ -105,6 +105,13 @@ export class AddEnumEntryComponent implements OnInit {
     } else if (event.key === 'Escape') {
       this.stoppedAddingEntries.emit();
     }
+  }
+
+  async onAddClick() {
+    await this.onNameKeydown({
+      key: 'Enter',
+      preventDefault: () => {},
+    } as KeyboardEvent);
   }
 
   onBlur() {

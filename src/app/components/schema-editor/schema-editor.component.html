@@ -12,7 +12,7 @@
         <span>
           @switch (saveState()) {
             @case ("noChange") {
-              Modified {{ schema().modified | date }}
+              Modified {{ schema().modified | date: "medium" }}
             }
             @case ("unsaved") {
               Unsaved changes
@@ -85,6 +85,6 @@
     }
   </div>
 
-  <ng-template #undoTip>Undo (<kbd>Ctrl</kbd> + <kbd>z</kbd>)</ng-template>
-  <ng-template #redoTip>Redo (<kbd>Ctrl</kbd> + <kbd>y</kbd>)</ng-template>
+  <ng-template #undoTip>Undo (<kbd>Ctrl</kbd> <kbd>z</kbd>)</ng-template>
+  <ng-template #redoTip>Redo (<kbd>Ctrl</kbd> <kbd>y</kbd>)</ng-template>
 }
