@@ -1,0 +1,42 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .status-section {
+    gap: 8px;
+    display: inline-flex;
+  }
+
+  .change-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+  }
+  
+  .enum-canvas {
+    font: 16px monospace;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    overflow-y: auto;
+  
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--p-primary-400);
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  
+    p-button {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+  }
+  

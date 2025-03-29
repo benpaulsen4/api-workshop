@@ -340,3 +340,21 @@ export class UpdateEnumEntry implements EditAction {
     return `Updated enum entry '${this.after.name}'`;
   }
 }
+
+export class ChangeEnumType implements EditAction {
+  constructor(
+    private before: 'string' | 'int',
+    private after: 'string' | 'int',
+  ) {}
+  apply<T>(currentState: T): void {
+    if ((currentState as Enum).values.length)
+      throw new Error("Can't change enum type if values exist");
+    (currentState as Enum).enumType = this.after;
+  }
+  revert<T>(currentState: T): void {
+    (currentState as Enum).enumType = this.before;
+  }
+  describe(): string {
+    return `Changed enum type from '${this.before}' to '${this.after}'`;
+  }
+}

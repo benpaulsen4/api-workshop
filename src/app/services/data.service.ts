@@ -4,6 +4,7 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { RxDBMigrationSchemaPlugin } from 'rxdb/plugins/migration-schema';
 import { SchemaSchema } from '../models/schema';
+import { EnumSchema } from '../models/enum';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +32,9 @@ export class DataService {
           },
         },
       },
+      enums: {
+        schema: EnumSchema,
+      },
     });
     console.log('db ready');
   }
@@ -44,4 +48,5 @@ export class DataService {
 
 export enum DataCollections {
   Schemas = 'schemas',
+  Enums = 'enums',
 }

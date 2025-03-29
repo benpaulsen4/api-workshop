@@ -88,7 +88,7 @@ describe('AppComponent', () => {
       const schemaName = 'Test Schema';
       routerSpy.navigate.and.returnValue(Promise.resolve(true));
 
-      await component.onCreate(schemaName);
+      await component.onCreateSchema(schemaName);
 
       const createdSchema = schemasSubject.value[0];
       expect(createdSchema.name).toBe(schemaName);
@@ -105,7 +105,7 @@ describe('AppComponent', () => {
       const schemaId = 'test-id';
       routerSpy.navigate.and.returnValue(Promise.resolve(true));
 
-      await component.onSelect(schemaId);
+      await component.onSelectSchema(schemaId);
 
       expect(routerSpy.navigate).toHaveBeenCalledWith(['schemas', schemaId]);
     });
@@ -119,7 +119,7 @@ describe('AppComponent', () => {
       });
       routerSpy.navigate.and.returnValue(Promise.resolve(true));
 
-      await component.onDelete(schemaId);
+      await component.onDeleteSchema(schemaId);
 
       expect(routerSpy.navigate).toHaveBeenCalledWith([]);
     });
@@ -130,7 +130,7 @@ describe('AppComponent', () => {
         value: '/schemas/different-id',
       });
 
-      await component.onDelete(schemaId);
+      await component.onDeleteSchema(schemaId);
 
       expect(routerSpy.navigate).not.toHaveBeenCalled();
     });

@@ -1,0 +1,103 @@
+@if (loading()) {
+  loading...
+} @else {
+  <h1>{{ enum().name }}</h1>
+  <p-toolbar>
+    <ng-template #start
+      ><div class="status-section">
+        <span>{{ enum().values.length | plural: "Entry" : "Entries" }}</span>
+        <span>•</span>
+        <span>
+          @switch (saveState()) {
+            @case ("noChange") {
+              Modified {{ enum().modified | date: "medium" }}
+            }
+            @case ("unsaved") {
+              Unsaved changes
+            }
+            @case ("saving") {
+              Saving...
+            }
+            @case ("saved") {
+              Saved {{ enum().modified | timeAgo }}
+            }
+          }
+        </span>
+      </div></ng-template
+    >
+    <ng-template #end>
+      <p-button
+        icon="pi pi-undo"
+        text="true"
+        ariaLabel="Undo"
+        [pTooltip]="undoTip"
+        tooltipPosition="top"
+        showDelay="500"
+        [disabled]="!canUndo()"
+        (click)="onUndo()"
+      ></p-button>
+      <p-button
+        icon="pi pi-undo flip-horizontal"
+        text="true"
+        ariaLabel="Redo"
+        [pTooltip]="redoTip"
+        tooltipPosition="top"
+        showDelay="500"
+        [disabled]="!canRedo()"
+        (click)="onRedo()"
+      ></p-button>
+    </ng-template>
+  </p-toolbar>
+
+  @if (canChangeType | async) {
+    <div class="change-type">
+      <span>What should be the value type for this enum?</span>
+
+      <p-selectbutton
+        [options]="[
+          { label: 'String', value: 'string' },
+          { label: 'Integer', value: 'int' },
+        ]"
+        [ngModel]="enum().enumType"
+        (ngModelChange)="onChangeType($event)"
+      ></p-selectbutton>
+
+      <p-message
+        severity="warn"
+        text="You can't change this later"
+        icon="pi pi-exclamation-triangle"
+      ></p-message>
+    </div>
+  }
+
+  <div class="enum-canvas">
+    @for (value of enum().values; track value.name) {
+      <app-enum-entry
+        [entry]="value"
+        [enumType]="enum().enumType"
+        [existingEntryNames]="entryNames"
+        [existingEntryValues]="entryValues"
+        (entryUpdated)="onEntryUpdated($event)"
+      ></app-enum-entry>
+    }
+
+    @if (addMode()) {
+      <app-add-enum-entry
+        [enumType]="enum().enumType"
+        [existingEntryNames]="entryNames"
+        [existingEntryValues]="entryValues"
+        (entryAdded)="onEntryAdded($event)"
+        (stoppedAddingEntries)="addMode.set(false)"
+      ></app-add-enum-entry>
+    } @else {
+      <p-button
+        label="Add Value"
+        icon="pi pi-plus"
+        (click)="addMode.set(true)"
+      ></p-button>
+    }
+  </div>
+
+  <ng-template #undoTip>Undo (<kbd>Ctrl</kbd> <kbd>z</kbd>)</ng-template>
+  <ng-template #redoTip>Redo (<kbd>Ctrl</kbd> <kbd>y</kbd>)</ng-template>
+}

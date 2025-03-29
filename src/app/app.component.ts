@@ -8,6 +8,7 @@ import { Schema } from './models/schema';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Router, RouterOutlet } from '@angular/router';
+import { Enum } from './models/enum';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +19,8 @@ import { Router, RouterOutlet } from '@angular/router';
   styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
-  items!: Observable<NamedEntity[]>;
+  schemas!: Observable<NamedEntity[]>;
+  enums!: Observable<NamedEntity[]>;
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -32,8 +34,12 @@ export class AppComponent implements OnInit {
     from(this.dataService.initializeDatabase()).subscribe({
       complete: () => {
         this.loading.set(false);
-        this.items = this.dataService
+        this.schemas = this.dataService
           .getCollection(DataCollections.Schemas)
+          .find().$;
+
+        this.enums = this.dataService
+          .getCollection(DataCollections.Enums)
           .find().$;
       },
       error: (error) => {
@@ -43,7 +49,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  async onCreate(name: string) {
+  async onCreateSchema(name: string) {
     const item: Schema = {
       id: v7(),
       name,
@@ -51,22 +57,50 @@ export class AppComponent implements OnInit {
       modified: Date.now(),
       properties: [],
     };
-    this.dataService.getCollection(DataCollections.Schemas)?.insert(item);
+    this.dataService.getCollection(DataCollections.Schemas).insert(item);
     await this.router.navigate(['schemas', item.id]);
   }
 
-  async onSelect(id: string) {
+  async onCreateEnum(name: string) {
+    const item: Enum = {
+      id: v7(),
+      name,
+      created: Date.now(),
+      modified: Date.now(),
+      enumType: 'string',
+      values: [],
+    };
+    this.dataService.getCollection(DataCollections.Enums).insert(item);
+    await this.router.navigate(['enums', item.id]);
+  }
+
+  async onSelectSchema(id: string) {
     await this.router.navigate(['schemas', id]);
   }
 
-  async onDelete(id: string) {
+  async onSelectEnum(id: string) {
+    await this.router.navigate(['enums', id]);
+  }
+  // TODO prevent deletes when the entity is referenced elsewhere
+  async onDeleteSchema(id: string) {
     if (this.router.url.includes(id)) {
-      await this.router.navigate([]);
+      await this.router.navigate(['']);
     }
 
     await this.dataService
       .getCollection(DataCollections.Schemas)
-      ?.findOne({ selector: { id: { $eq: id } } })
+      .findOne({ selector: { id: { $eq: id } } })
+      .remove();
+  }
+  // TODO prevent deletes when the entity is referenced elsewhere
+  async onDeleteEnum(id: string) {
+    if (this.router.url.includes(id)) {
+      await this.router.navigate(['']);
+    }
+
+    await this.dataService
+      .getCollection(DataCollections.Enums)
+      .findOne({ selector: { id: { $eq: id } } })
       .remove();
   }
 }
