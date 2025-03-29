@@ -1,4 +1,4 @@
-import { UpdateName } from './edit-actions';
+import { ChangeEnumType, UpdateName } from './edit-actions';
 import { AddSchemaProperty } from './edit-actions';
 import { RemoveSchemaProperty } from './edit-actions';
 import { UpdateSchemaProperty } from './edit-actions';
@@ -544,6 +544,49 @@ describe('EditActions', () => {
     it('should provide correct description', () => {
       const action = new UpdateEnumEntry(beforeEntry, afterEntry);
       expect(action.describe()).toBe("Updated enum entry 'testEntry'");
+    });
+  });
+
+  describe('ChangeEnumType', () => {
+    let testEnum: Enum;
+
+    beforeEach(() => {
+      testEnum = {
+        id: 'test',
+        name: 'testEnum',
+        created: 1,
+        modified: 1,
+        enumType: 'string',
+        values: [],
+      };
+    });
+
+    it('should change enum type when apply is called', () => {
+      const action = new ChangeEnumType('string', 'int');
+      action.apply(testEnum);
+      expect(testEnum.enumType).toBe('int');
+    });
+
+    it('should restore original type when revert is called', () => {
+      const action = new ChangeEnumType('string', 'int');
+      action.apply(testEnum);
+      action.revert(testEnum);
+      expect(testEnum.enumType).toBe('string');
+    });
+
+    it('should throw error when values exist', () => {
+      testEnum.values.push({ name: 'test', value: 'TEST' });
+      const action = new ChangeEnumType('string', 'int');
+      expect(() => action.apply(testEnum)).toThrow(
+        Error("Can't change enum type if values exist"),
+      );
+    });
+
+    it('should provide correct description', () => {
+      const action = new ChangeEnumType('string', 'int');
+      expect(action.describe()).toBe(
+        "Changed enum type from 'string' to 'int'",
+      );
     });
   });
 });

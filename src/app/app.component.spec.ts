@@ -121,7 +121,7 @@ describe('AppComponent', () => {
 
       await component.onDeleteSchema(schemaId);
 
-      expect(routerSpy.navigate).toHaveBeenCalledWith([]);
+      expect(routerSpy.navigate).toHaveBeenCalledWith(['']);
     });
 
     it('should delete schema without navigation if not currently viewing it', async () => {
