@@ -9,6 +9,14 @@
           schema().properties.length | plural: "Property" : "Properties"
         }}</span>
         <span>•</span>
+        <!-- TODO add a dropdown here to quickly go to references -->
+        @if (this.schemaReferences().length) {
+          <span
+            >Referenced by
+            {{ this.schemaReferences().length | plural: "schema" }}</span
+          >
+          <span>•</span>
+        }
         <span>
           @switch (saveState()) {
             @case ("noChange") {
@@ -64,6 +72,7 @@
       <app-property
         [existingPropertyNames]="propertyNames"
         [existingSchemaLookup]="allSchemaLookup"
+        [enumLookup]="allEnumLookup"
         [property]="prop"
         (propertyUpdated)="onPropertyUpdated($event)"
       ></app-property>
@@ -73,6 +82,7 @@
       <app-add-property
         [existingPropertyNames]="propertyNames"
         [existingSchemaLookup]="allSchemaLookup"
+        [enumLookup]="allEnumLookup"
         (propertyAdded)="onPropertyAdded($event)"
         (stoppedAddingProperties)="addMode.set(false)"
       ></app-add-property>

@@ -54,6 +54,7 @@ import { Router } from '@angular/router';
 export class PropertyComponent {
   readonly property = input.required<Property>();
   readonly existingSchemaLookup = input<Record<string, string>>();
+  readonly enumLookup = input<Record<string, string>>();
   readonly existingPropertyNames = input<Observable<string[]>>();
 
   readonly propertyUpdated = output<EditAction>();
@@ -62,65 +63,66 @@ export class PropertyComponent {
 
   readonly typeString = computed(() => this.getTypeString(this.property()));
 
-  readonly hasChildProperties = computed(
+  readonly isObjectAdjacent = computed(
     () =>
       this.property().type === PropertyType.Object ||
       (this.property().type === PropertyType.Array &&
         (this.property().options as ArrayOptions)?.childType ===
           PropertyType.Object),
   );
+  readonly hasChildProperties = computed(
+    () =>
+      this.isObjectAdjacent() &&
+      ((this.property().options as ObjectOptions)?.objectType === 'inline' ||
+        (
+          (this.property().options as ArrayOptions)
+            ?.childOptions as ObjectOptions
+        )?.objectType === 'inline'),
+  );
   readonly childProperties = computed(() => {
-    if (!this.hasChildProperties()) return [];
+    if (!this.isObjectAdjacent()) return [];
 
     return (
       (this.property().options as ObjectOptions)?.childProperties ??
       ((this.property().options as ArrayOptions)?.childOptions as ObjectOptions)
         ?.childProperties ??
       []
-    ); //TODO return props for refs
+    );
   });
-  readonly canAddChildProperties = computed(
-    () =>
-      (this.hasChildProperties() &&
-        (this.property().options as ObjectOptions)?.objectType === 'inline') ||
-      ((this.property().options as ArrayOptions)?.childOptions as ObjectOptions)
-        ?.objectType === 'inline',
-  );
   readonly childPropertyNames = toObservable(this.childProperties).pipe(
     map((a) => a.map((p) => p.name)),
   );
 
-  readonly hasEnumValues = computed(
+  readonly isEnumAdjacent = computed(
     () =>
       this.property().type === PropertyType.Enum ||
       (this.property().type === PropertyType.Array &&
         (this.property().options as ArrayOptions)?.childType ===
           PropertyType.Enum),
   );
+  readonly hasEnumValues = computed(
+    () =>
+      this.isEnumAdjacent() &&
+      (this.property().options as EnumOptions)?.enumType !== 'ref' &&
+      ((this.property().options as ArrayOptions)?.childOptions as EnumOptions)
+        ?.enumType !== 'ref',
+  );
   readonly enumValues = computed(() => {
-    if (!this.hasEnumValues()) return [];
+    if (!this.isEnumAdjacent()) return [];
 
     return (
       (this.property().options as EnumOptions)?.values ??
       ((this.property().options as ArrayOptions)?.childOptions as EnumOptions)
         ?.values ??
       []
-    ); //TODO return values for refs
+    );
   });
-  readonly canAddEnumValues = computed(
-    () =>
-      (this.hasEnumValues() &&
-        (this.property().options as EnumOptions)?.enumType !== 'ref') ||
-      ((this.property().options as ArrayOptions)?.childOptions as EnumOptions)
-        ?.enumType !== 'ref',
-  );
   readonly enumValueNames = toObservable(this.enumValues).pipe(
     map((a) => a.map((p) => p.name)),
   );
   readonly enumValueKeys = toObservable(this.enumValues).pipe(
     map((a) => a.map((p) => p.value)),
   );
-  //TODO when ref enums added need to pass the type down
   readonly enumType = computed(() => {
     const type =
       (this.property().options as EnumOptions)?.enumType ??
@@ -128,6 +130,7 @@ export class PropertyComponent {
         ?.enumType;
 
     if (type === 'ref') {
+      //The actual enum type does not matter when a ref type
       return 'string';
     } else {
       return type;
@@ -146,7 +149,7 @@ export class PropertyComponent {
   constructor(private router: Router) {}
 
   onChildPropertyAdded(prop: Property) {
-    if (!this.canAddChildProperties()) return;
+    if (!this.hasChildProperties()) return;
 
     const clone = structuredClone(this.property());
 
@@ -165,7 +168,7 @@ export class PropertyComponent {
   }
 
   onEnumEntryAdded(entry: EnumEntry) {
-    if (!this.canAddEnumValues()) return;
+    if (!this.hasEnumValues()) return;
 
     const clone = structuredClone(this.property());
 
@@ -201,12 +204,35 @@ export class PropertyComponent {
   }
 
   async onGoToReference() {
-    const refId =
-      (this.property().options as ObjectOptions)?.refId ??
-      ((this.property().options as ArrayOptions).childOptions as ObjectOptions)
-        .refId;
-    if (!refId) return;
-    await this.router.navigate(['schemas', refId]);
+    if (
+      this.property().type === PropertyType.Object ||
+      (this.property().type === PropertyType.Array &&
+        (this.property().options as ArrayOptions).childType ===
+          PropertyType.Object)
+    ) {
+      const refId =
+        (this.property().options as ObjectOptions)?.refId ??
+        (
+          (this.property().options as ArrayOptions)
+            .childOptions as ObjectOptions
+        ).refId;
+      if (!refId) return;
+      await this.router.navigate(['schemas', refId]);
+    } else if (
+      this.property().type === PropertyType.Enum ||
+      (this.property().type === PropertyType.Array &&
+        (this.property().options as ArrayOptions).childType ===
+          PropertyType.Enum)
+    ) {
+      const refId =
+        (this.property().options as EnumOptions)?.refId ??
+        ((this.property().options as ArrayOptions).childOptions as EnumOptions)
+          .refId;
+      if (!refId) return;
+      await this.router.navigate(['enums', refId]);
+    } else {
+      throw new Error('Unknown reference type');
+    }
   }
 
   getTypeString(prop: Property): string {
@@ -231,9 +257,11 @@ export class PropertyComponent {
         baseString = `array (${this.getTypeString({ type: castedOptions.childType, options: castedOptions.childOptions } as Property)})`;
         break;
       }
-      case PropertyType.Enum:
-        baseString = `enum (${(prop.options! as EnumOptions).enumType})`;
+      case PropertyType.Enum: {
+        const castedOptions = prop.options! as EnumOptions;
+        baseString = `enum (${castedOptions.enumType === 'ref' ? Object.entries(this.enumLookup() ?? {}).find((e) => e[1] == castedOptions.refId)?.[0] : castedOptions.enumType})`;
         break;
+      }
     }
 
     if (prop.nullable) {

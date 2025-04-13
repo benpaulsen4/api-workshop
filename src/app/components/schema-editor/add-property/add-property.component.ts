@@ -33,6 +33,7 @@ import { Button } from 'primeng/button';
 })
 export class AddPropertyComponent implements OnInit {
   readonly existingSchemaLookup = input<Record<string, string>>();
+  readonly enumLookup = input<Record<string, string>>();
   readonly existingPropertyNames = input<Observable<string[]>>();
 
   readonly propertyAdded = output<Property>();
@@ -53,6 +54,7 @@ export class AddPropertyComponent implements OnInit {
   ngOnInit(): void {
     this.typeaheadEngine = new PropertyTypeaheadEngine(
       this.existingSchemaLookup(),
+      this.enumLookup(),
     );
 
     this.nameFormControl = new FormControl('', [

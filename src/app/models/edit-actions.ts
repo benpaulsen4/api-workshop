@@ -6,6 +6,7 @@ import {
   ObjectOptions,
   Property,
   PropertyType,
+  Reference,
   Schema,
 } from './schema';
 
@@ -37,12 +38,20 @@ export class UpdateName implements EditAction {
 //SCHEMA SECTION
 export class AddSchemaProperty implements EditAction {
   private index?: number;
+  private refIndex?: number;
 
   constructor(private property: Property) {}
 
   apply<T>(currentState: T): void {
-    (currentState as Schema).properties.push(this.property);
-    this.index = (currentState as Schema).properties.length - 1;
+    this.index = (currentState as Schema).properties.push(this.property) - 1;
+
+    const ref =
+      (this.property.options as Reference)?.refId ||
+      ((this.property.options as ArrayOptions)?.childOptions as Reference)
+        ?.refId;
+    if (ref) {
+      this.refIndex = (currentState as Schema).refIndex.push(ref) - 1;
+    }
   }
 
   revert<T>(currentState: T): void {
@@ -53,6 +62,10 @@ export class AddSchemaProperty implements EditAction {
     }
 
     (currentState as Schema).properties.splice(this.index, 1);
+
+    if (this.refIndex && this.refIndex !== -1) {
+      (currentState as Schema).refIndex.splice(this.refIndex, 1);
+    }
   }
 
   describe(): string {
@@ -62,6 +75,8 @@ export class AddSchemaProperty implements EditAction {
 
 export class RemoveSchemaProperty implements EditAction {
   private index?: number;
+  private refIndex?: number;
+  private ref?: string;
 
   constructor(private property: Property) {}
 
@@ -74,6 +89,19 @@ export class RemoveSchemaProperty implements EditAction {
       throw new Error('Cannot remove property as it was not found');
 
     (currentState as Schema).properties.splice(this.index, 1);
+
+    this.ref =
+      (this.property.options as Reference)?.refId ||
+      ((this.property.options as ArrayOptions)?.childOptions as Reference)
+        ?.refId;
+    if (this.ref) {
+      this.refIndex = (currentState as Schema).refIndex.findIndex(
+        (i) => i === this.ref,
+      );
+      if (this.refIndex != -1) {
+        (currentState as Schema).refIndex.splice(this.refIndex, 1);
+      }
+    }
   }
 
   revert<T>(currentState: T): void {
@@ -81,6 +109,10 @@ export class RemoveSchemaProperty implements EditAction {
       throw new Error('Cannot revert remove property as it was never found');
 
     (currentState as Schema).properties.splice(this.index, 0, this.property);
+
+    if (this.refIndex && this.refIndex !== -1 && this.ref) {
+      (currentState as Schema).refIndex.splice(this.refIndex, 0, this.ref);
+    }
   }
 
   describe(): string {
@@ -89,6 +121,9 @@ export class RemoveSchemaProperty implements EditAction {
 }
 
 export class UpdateSchemaProperty implements EditAction {
+  private beforeRef?: string;
+  private afterRef?: string;
+
   constructor(
     private before: Property,
     private after: Property,
@@ -103,6 +138,28 @@ export class UpdateSchemaProperty implements EditAction {
       throw new Error('Cannot update property as it was not found');
 
     (currentState as Schema).properties.splice(index, 1, this.after);
+
+    this.beforeRef =
+      (this.before.options as Reference)?.refId ||
+      ((this.before.options as ArrayOptions)?.childOptions as Reference)?.refId;
+
+    this.afterRef =
+      (this.after.options as Reference)?.refId ||
+      ((this.after.options as ArrayOptions)?.childOptions as Reference)?.refId;
+
+    if (this.beforeRef !== this.afterRef) {
+      const index = (currentState as Schema).refIndex.findIndex(
+        (i) => i === this.beforeRef,
+      );
+
+      if (this.beforeRef && index !== -1) {
+        (currentState as Schema).refIndex.splice(index, 1);
+      }
+
+      if (this.afterRef) {
+        (currentState as Schema).refIndex.push(this.afterRef);
+      }
+    }
   }
 
   revert<T>(currentState: T): void {
@@ -116,6 +173,20 @@ export class UpdateSchemaProperty implements EditAction {
       );
 
     (currentState as Schema).properties.splice(index, 1, this.before);
+
+    if (this.beforeRef !== this.afterRef) {
+      if (this.afterRef) {
+        const index = (currentState as Schema).refIndex.findIndex(
+          (i) => i === this.afterRef,
+        );
+        if (index !== -1) {
+          (currentState as Schema).refIndex.splice(index, 1);
+        }
+      }
+      if (this.beforeRef) {
+        (currentState as Schema).refIndex.push(this.beforeRef);
+      }
+    }
   }
 
   describe(): string {
@@ -141,6 +212,7 @@ export class UpdateChildProperty implements EditAction {
       clone = structuredClone(this.parent);
       this.innerUpdate.apply({
         properties: (clone.options as ObjectOptions).childProperties,
+        refIndex: (currentState as Schema).refIndex, // BUG this passing down does not seem to work
       } as Schema);
     } else if (
       this.parent.type === PropertyType.Enum &&
@@ -160,6 +232,7 @@ export class UpdateChildProperty implements EditAction {
         properties: (
           (clone.options as ArrayOptions).childOptions as ObjectOptions
         ).childProperties,
+        refIndex: (currentState as Schema).refIndex,
       } as Schema);
     } else if (
       this.parent.type === PropertyType.Array &&

@@ -22,7 +22,10 @@ export class PropertyTypeaheadEngine {
     PropertyType.Enum,
   ]);
 
-  constructor(private availableSchemas: Record<string, string> = {}) {}
+  constructor(
+    private availableSchemas: Record<string, string> = {},
+    private availableEnums: Record<string, string> = {},
+  ) {}
 
   parse(input: string): PropertyParseResult {
     input = input.trim();
@@ -153,7 +156,7 @@ export class PropertyTypeaheadEngine {
         ).map((q) => this.completeTypeString(input, q));
 
       case PropertyType.Enum:
-        return ['string', 'int']
+        return ['string', 'int', ...Object.keys(this.availableEnums)]
           .filter((q) => q.startsWith(partialQualifier))
           .map((q) => this.completeTypeString(input, q));
     }
@@ -183,7 +186,13 @@ export class PropertyTypeaheadEngine {
               )
               .map((t) => `array (${t})`);
           case PropertyType.Enum:
-            return ['enum (string)', 'enum (int)'];
+            return [
+              'enum (string)',
+              'enum (int)',
+              ...Object.keys(this.availableEnums).map(
+                (enumName) => `enum (${enumName})`,
+              ),
+            ];
           default:
             return [];
         }
@@ -285,8 +294,11 @@ export class PropertyTypeaheadEngine {
         break;
       }
       case PropertyType.Enum:
-        if (!['string', 'int'].includes(qualifier)) {
-          return 'Enum type must have qualifier "string" or "int"';
+        if (
+          !['string', 'int'].includes(qualifier) &&
+          !this.availableEnums[qualifier]
+        ) {
+          return 'Enum must have the type "string" or "int" or be a valid reference';
         }
         break;
       default:
@@ -340,10 +352,20 @@ export class PropertyTypeaheadEngine {
         }
 
         case PropertyType.Enum:
-          property.options = {
-            enumType: parseResult.qualifier,
-            values: [],
-          } as EnumOptions;
+          if (
+            parseResult.qualifier !== 'string' &&
+            parseResult.qualifier !== 'int'
+          ) {
+            property.options = {
+              enumType: 'ref',
+              refId: this.availableEnums[parseResult.qualifier],
+            } as EnumOptions;
+          } else {
+            property.options = {
+              enumType: parseResult.qualifier,
+              values: [],
+            } as EnumOptions;
+          }
           break;
       }
     }

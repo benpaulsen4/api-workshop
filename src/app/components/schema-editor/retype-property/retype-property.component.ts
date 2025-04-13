@@ -20,6 +20,7 @@ import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 export class RetypePropertyComponent implements OnInit {
   readonly existingProperty = input<Property>();
   readonly existingSchemaLookup = input<Record<string, string>>();
+  readonly enumLookup = input<Record<string, string>>();
 
   readonly retypeComplete = output<Property>();
 
@@ -30,8 +31,11 @@ export class RetypePropertyComponent implements OnInit {
   typeaheadEngine?: PropertyTypeaheadEngine;
 
   ngOnInit(): void {
+    console.log(this.enumLookup());
+    // BUG the reference lookups here don't work
     this.typeaheadEngine = new PropertyTypeaheadEngine(
       this.existingSchemaLookup(),
+      this.enumLookup(),
     );
   }
 

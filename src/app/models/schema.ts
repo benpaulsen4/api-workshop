@@ -8,6 +8,7 @@ export interface Schema extends NamedEntity {
   modified: number;
 
   properties: Property[];
+  refIndex: string[];
 }
 
 export interface Property {
@@ -36,7 +37,7 @@ export interface NumberOptions {
   doublePrecision: boolean;
 }
 
-export interface ObjectOptions {
+export interface ObjectOptions extends Reference {
   objectType: 'inline' | 'ref';
   childProperties?: Property[];
   refId?: string;
@@ -47,13 +48,18 @@ export interface ArrayOptions {
   childOptions?: PropertyOptions;
 }
 
-export interface EnumOptions {
+export interface EnumOptions extends Reference {
   enumType: 'string' | 'int' | 'ref';
-  values: EnumEntry[];
+  values?: EnumEntry[];
+  refId?: string;
+}
+
+export interface Reference {
+  refId?: string;
 }
 
 export const SchemaSchema = {
-  version: 1,
+  version: 2,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -86,6 +92,12 @@ export const SchemaSchema = {
         required: ['name', 'type', 'nullable'],
       },
     },
+    refIndex: {
+      type: 'array',
+      items: {
+        type: 'string',
+      },
+    },
   },
-  required: ['id', 'name', 'created', 'modified', 'properties'],
+  required: ['id', 'name', 'created', 'modified', 'properties', 'refIndex'],
 };

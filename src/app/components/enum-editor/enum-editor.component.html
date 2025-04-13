@@ -7,6 +7,13 @@
       ><div class="status-section">
         <span>{{ enum().values.length | plural: "Entry" : "Entries" }}</span>
         <span>•</span>
+        @if (this.schemaReferences().length) {
+          <span
+            >Referenced by
+            {{ this.schemaReferences().length | plural: "schema" }}</span
+          >
+          <span>•</span>
+        }
         <span>
           @switch (saveState()) {
             @case ("noChange") {
@@ -25,6 +32,7 @@
         </span>
       </div></ng-template
     >
+
     <ng-template #end>
       <p-button
         icon="pi pi-undo"

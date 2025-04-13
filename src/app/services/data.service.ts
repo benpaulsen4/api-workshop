@@ -30,6 +30,10 @@ export class DataService {
             oldDoc.properties = [];
             return oldDoc;
           },
+          2: function (oldDoc) {
+            oldDoc.refIndex = [];
+            return oldDoc;
+          },
         },
       },
       enums: {

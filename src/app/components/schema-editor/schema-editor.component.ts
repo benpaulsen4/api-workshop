@@ -21,6 +21,7 @@ import { PluralPipe } from '../../pipes/plural.pipe';
 import { DatePipe } from '@angular/common';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 import { SchemaToJsonSchemaExportService } from '../../services/schema-to-json-schema-export.service';
+import { NamedEntity } from '../../models/named-entity';
 
 @Component({
   selector: 'app-schema-editor',
@@ -54,6 +55,16 @@ export class SchemaEditorComponent implements OnInit {
       this.propertiesSubject.next(this.schema().properties);
       this.loading.set(false);
     });
+
+    this.dataService
+      .getCollection(DataCollections.Schemas)
+      .find({
+        selector: { refIndex: this.schemaId() },
+      })
+      .exec()
+      .then((schemas) => {
+        this.schemaReferences.set(schemas);
+      });
   });
 
   readonly schema = computed(() => this.editStateService.entity() as Schema);
@@ -67,8 +78,11 @@ export class SchemaEditorComponent implements OnInit {
   );
   readonly loading = signal(true);
   readonly addMode = signal(false);
+  readonly schemaReferences = signal<NamedEntity[]>([]);
 
+  //Lookups are in format Name: id as they are _primarily_ used for selecting available references
   allSchemaLookup!: Record<string, string>;
+  allEnumLookup!: Record<string, string>;
 
   constructor(
     private editStateService: EditStateService,
@@ -85,6 +99,17 @@ export class SchemaEditorComponent implements OnInit {
       .exec()
       .then((allSchemas) => {
         this.allSchemaLookup = allSchemas.reduce((a, b) => {
+          a[b.name] = b.id;
+          return a;
+        }, {});
+      });
+
+    this.dataService
+      .getCollection(DataCollections.Enums)
+      .find()
+      .exec()
+      .then((allEnums) => {
+        this.allEnumLookup = allEnums.reduce((a, b) => {
           a[b.name] = b.id;
           return a;
         }, {});

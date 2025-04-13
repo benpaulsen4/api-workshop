@@ -27,6 +27,7 @@ import {
 import { SelectButton } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
 import { Message } from 'primeng/message';
+import { NamedEntity } from '../../models/named-entity';
 
 @Component({
   selector: 'app-enum-editor',
@@ -53,6 +54,7 @@ export class EnumEditorComponent implements OnInit {
 
   readonly loading = signal(true);
   readonly addMode = signal(false);
+  readonly schemaReferences = signal<NamedEntity[]>([]);
 
   readonly enum = computed(() => this.editStateService.entity() as Enum);
   readonly saveState = computed(() => this.editStateService.saveState());
@@ -66,6 +68,15 @@ export class EnumEditorComponent implements OnInit {
       this.entriesSubject.next(this.enum().values);
       this.loading.set(false);
     });
+    this.dataService
+      .getCollection(DataCollections.Schemas)
+      .find({
+        selector: { refIndex: this.enumId() },
+      })
+      .exec()
+      .then((schemas) => {
+        this.schemaReferences.set(schemas);
+      });
   });
 
   readonly entriesSubject = new BehaviorSubject<EnumEntry[]>([]); // HACK for same reason as schema editor, though I'm pretty sure I know how to fix this now - leaving as is for consistency
@@ -82,6 +93,7 @@ export class EnumEditorComponent implements OnInit {
   constructor(
     private editStateService: EditStateService,
     private messageService: MessageService,
+    private dataService: DataService,
   ) {}
 
   ngOnInit(): void {

@@ -12,18 +12,22 @@ import { ContentDownloadService } from './content-download.service';
 import { StringUtils } from '../utilities/string-utils';
 import { DataCollections, DataService } from './data.service';
 import { RxCollection } from 'rxdb';
+import { NamedEntity } from '../models/named-entity';
+import { Enum } from '../models/enum';
 
 @Injectable()
 export class SchemaToJsonSchemaExportService {
   static readonly MetadataKey = 'x-api-workshop-meta';
 
   private schemaCollection: RxCollection;
+  private enumCollection: RxCollection;
 
   constructor(
     private downloadService: ContentDownloadService,
     dataService: DataService,
   ) {
     this.schemaCollection = dataService.getCollection(DataCollections.Schemas);
+    this.enumCollection = dataService.getCollection(DataCollections.Enums);
   }
 
   public async export(schema: Schema): Promise<void> {
@@ -108,7 +112,7 @@ export class SchemaToJsonSchemaExportService {
             {
               name: '',
               type: (property.options as ArrayOptions)?.childType,
-              nullable: true,
+              nullable: true, // TODO is this an issue?
               options: (property.options as ArrayOptions)?.childOptions,
             },
             [],
@@ -138,6 +142,7 @@ export class SchemaToJsonSchemaExportService {
         } else {
           if (objectOptions.refId === currentSchemaId) {
             //special handling for recursive schemas
+            // TODO does this work if the recursive schema is itself a def?
             return {
               $ref: '#',
             };
@@ -155,12 +160,12 @@ export class SchemaToJsonSchemaExportService {
       }
       case PropertyType.Enum: {
         const enumOptions = property.options as EnumOptions;
-        if (enumOptions?.enumType === 'string') {
+        if (enumOptions.enumType === 'string') {
           return {
             type: 'string',
-            enum: enumOptions.values.map((x) => x.value),
+            enum: enumOptions.values!.map((x) => x.value),
             [SchemaToJsonSchemaExportService.MetadataKey]: {
-              enumMappings: enumOptions.values.reduce(
+              enumMappings: enumOptions.values!.reduce(
                 (acc, x) => {
                   acc[x.value] = x.name;
                   return acc;
@@ -169,12 +174,12 @@ export class SchemaToJsonSchemaExportService {
               ),
             },
           };
-        } else if (enumOptions?.enumType === 'int') {
+        } else if (enumOptions.enumType === 'int') {
           return {
             type: 'integer',
-            enum: enumOptions.values.map((x) => x.value),
+            enum: enumOptions.values!.map((x) => x.value),
             [SchemaToJsonSchemaExportService.MetadataKey]: {
-              enumMappings: enumOptions.values.reduce(
+              enumMappings: enumOptions.values!.reduce(
                 (acc, x) => {
                   acc[x.value] = x.name;
                   return acc;
@@ -184,7 +189,14 @@ export class SchemaToJsonSchemaExportService {
             },
           };
         } else {
-          throw new Error('Enum refs dont exist yet');
+          const enumEntity: Enum = (
+            await this.enumCollection
+              .findOne({ selector: { id: { $eq: enumOptions.refId } } })
+              .exec()
+          ).toMutableJSON();
+          return {
+            $ref: await this.addDefReference(enumEntity, defs),
+          };
         }
       }
       default:
@@ -193,16 +205,55 @@ export class SchemaToJsonSchemaExportService {
   }
 
   private async addDefReference(
-    schema: Schema,
+    entity: NamedEntity,
     defs: Record<string, any>,
   ): Promise<string> {
-    const name = StringUtils.toCamelCase(schema.name);
-    if (defs[name]) {
-      //reference already exists as schema names are unique
+    let name = StringUtils.toCamelCase(entity.name);
+    if ((entity as Schema)?.properties) {
+      while (defs[name]) {
+        if (defs[name].type === 'object') {
+          //Reference already exists as schema names are unique
+          return `#/$defs/${name}`;
+        } else {
+          //An enum reference exists with the same name
+          name = `${name}Schema`;
+        }
+      }
+
+      defs[name] = await this.convertSchema(entity as Schema, defs);
+      return `#/$defs/${name}`;
+    } else if ((entity as Enum)?.values) {
+      while (defs[name]) {
+        if (defs[name].type === 'string' || defs[name].type === 'integer') {
+          //Reference already exists as enum names are unique
+          return `#/$defs/${name}`;
+        } else {
+          //A schema reference exists with the same name
+          name = `${name}Enum`;
+        }
+      }
+
+      const castedEnum = entity as Enum;
+
+      defs[name] = {
+        type: castedEnum.enumType === 'string' ? 'string' : 'integer',
+        enum: castedEnum.values.map((x) => x.value),
+        [SchemaToJsonSchemaExportService.MetadataKey]: {
+          id: castedEnum.id,
+          created: castedEnum.created,
+          modified: castedEnum.modified,
+          enumMappings: castedEnum.values.reduce(
+            (acc, x) => {
+              acc[x.value] = x.name;
+              return acc;
+            },
+            {} as Record<string | number, string>,
+          ),
+        },
+      };
       return `#/$defs/${name}`;
     } else {
-      defs[name] = await this.convertSchema(schema, defs);
-      return `#/$defs/${name}`;
+      throw new Error('Unknown entity type');
     }
   }
 }

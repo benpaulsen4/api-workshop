@@ -18,7 +18,10 @@
 
   <div class="h-divider"></div>
 
-  @if (hasChildProperties() && !canAddChildProperties()) {
+  @if (
+    (isObjectAdjacent() && !hasChildProperties()) ||
+    (isEnumAdjacent() && !hasEnumValues())
+  ) {
     <p-button
       link="true"
       class="prop-action"
@@ -45,28 +48,28 @@
       <app-property
         [existingPropertyNames]="childPropertyNames"
         [existingSchemaLookup]="existingSchemaLookup()"
+        [enumLookup]="enumLookup()"
         [property]="prop"
         (propertyUpdated)="onChildPropertyUpdated($event)"
       ></app-property>
     }
 
-    @if (canAddChildProperties()) {
-      @if (addMode()) {
-        <app-add-property
-          [existingPropertyNames]="childPropertyNames"
-          [existingSchemaLookup]="existingSchemaLookup()"
-          (propertyAdded)="onChildPropertyAdded($event)"
-          (stoppedAddingProperties)="addMode.set(false)"
-        ></app-add-property>
-      } @else {
-        <p-button
-          label="Add Property"
-          class="add-prop-button"
-          icon="pi pi-plus"
-          size="small"
-          (click)="addMode.set(true)"
-        ></p-button>
-      }
+    @if (addMode()) {
+      <app-add-property
+        [existingPropertyNames]="childPropertyNames"
+        [existingSchemaLookup]="existingSchemaLookup()"
+        [enumLookup]="enumLookup()"
+        (propertyAdded)="onChildPropertyAdded($event)"
+        (stoppedAddingProperties)="addMode.set(false)"
+      ></app-add-property>
+    } @else {
+      <p-button
+        label="Add Property"
+        class="add-prop-button"
+        icon="pi pi-plus"
+        size="small"
+        (click)="addMode.set(true)"
+      ></p-button>
     }
   </div>
 }
@@ -83,24 +86,22 @@
       ></app-enum-entry>
     }
 
-    @if (canAddEnumValues()) {
-      @if (addMode()) {
-        <app-add-enum-entry
-          [enumType]="enumType()"
-          [existingEntryNames]="enumValueNames"
-          [existingEntryValues]="enumValueKeys"
-          (entryAdded)="onEnumEntryAdded($event)"
-          (stoppedAddingEntries)="addMode.set(false)"
-        ></app-add-enum-entry>
-      } @else {
-        <p-button
-          label="Add Entry"
-          class="add-prop-button"
-          icon="pi pi-plus"
-          size="small"
-          (click)="addMode.set(true)"
-        ></p-button>
-      }
+    @if (addMode()) {
+      <app-add-enum-entry
+        [enumType]="enumType()"
+        [existingEntryNames]="enumValueNames"
+        [existingEntryValues]="enumValueKeys"
+        (entryAdded)="onEnumEntryAdded($event)"
+        (stoppedAddingEntries)="addMode.set(false)"
+      ></app-add-enum-entry>
+    } @else {
+      <p-button
+        label="Add Entry"
+        class="add-prop-button"
+        icon="pi pi-plus"
+        size="small"
+        (click)="addMode.set(true)"
+      ></p-button>
     }
   </div>
 }
@@ -115,6 +116,7 @@
 <p-popover #retype>
   <app-retype-property
     [existingSchemaLookup]="existingSchemaLookup()"
+    [enumLookup]="enumLookup()"
     [existingProperty]="property()"
     (retypeComplete)="onRetypeProperty($event)"
   ></app-retype-property>

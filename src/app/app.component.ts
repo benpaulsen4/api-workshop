@@ -56,6 +56,7 @@ export class AppComponent implements OnInit {
       created: Date.now(),
       modified: Date.now(),
       properties: [],
+      refIndex: [],
     };
     this.dataService.getCollection(DataCollections.Schemas).insert(item);
     await this.router.navigate(['schemas', item.id]);
