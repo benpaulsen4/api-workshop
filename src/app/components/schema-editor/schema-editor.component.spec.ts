@@ -20,6 +20,7 @@ describe('SchemaEditorComponent', () => {
       id: 'test-id',
       name: 'TestSchema',
       properties: [],
+      refIndex: [],
       created: 1,
       modified: 1,
     };

@@ -14,6 +14,7 @@ import {
   ObjectOptions,
   ArrayOptions,
   EnumOptions,
+  Reference,
 } from './schema';
 import { Enum, EnumEntry } from './enum';
 
@@ -55,6 +56,7 @@ describe('EditActions', () => {
         created: 1,
         modified: 1,
         properties: [],
+        refIndex: [],
       };
       testProperty = {
         name: 'newProp',
@@ -88,6 +90,68 @@ describe('EditActions', () => {
         Error('Cannot revert add property as the property was not found'),
       );
     });
+
+    it('should add ref to refIndex when property has direct ref', () => {
+      testProperty = {
+        name: 'refProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'test-ref' } as ObjectOptions,
+      };
+      const action = new AddSchemaProperty(testProperty);
+      action.apply(testSchema);
+      expect(testSchema.refIndex).toContain('test-ref');
+    });
+
+    it('should add ref to refIndex when array property has ref child options', () => {
+      testProperty = {
+        name: 'arrayProp',
+        type: PropertyType.Array,
+        nullable: false,
+        options: {
+          childType: PropertyType.Object,
+          childOptions: {
+            objectType: 'ref',
+            refId: 'test-ref',
+          } as ObjectOptions,
+        } as ArrayOptions,
+      };
+      const action = new AddSchemaProperty(testProperty);
+      action.apply(testSchema);
+      expect(testSchema.refIndex).toContain('test-ref');
+    });
+
+    it('should remove ref from refIndex when reverting property with direct ref', () => {
+      testProperty = {
+        name: 'refProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'test-ref' } as ObjectOptions,
+      };
+      const action = new AddSchemaProperty(testProperty);
+      action.apply(testSchema);
+      action.revert(testSchema);
+      expect(testSchema.refIndex).not.toContain('test-ref');
+    });
+
+    it('should remove ref from refIndex when reverting array property with ref child options', () => {
+      testProperty = {
+        name: 'arrayProp',
+        type: PropertyType.Array,
+        nullable: false,
+        options: {
+          childType: PropertyType.Object,
+          childOptions: {
+            objectType: 'ref',
+            refId: 'test-ref',
+          } as ObjectOptions,
+        } as ArrayOptions,
+      };
+      const action = new AddSchemaProperty(testProperty);
+      action.apply(testSchema);
+      action.revert(testSchema);
+      expect(testSchema.refIndex).not.toContain('test-ref');
+    });
   });
 
   describe('RemoveSchemaProperty', () => {
@@ -106,6 +170,7 @@ describe('EditActions', () => {
         created: 1,
         modified: 1,
         properties: [testProperty],
+        refIndex: [],
       };
     });
 
@@ -139,6 +204,74 @@ describe('EditActions', () => {
       const action = new RemoveSchemaProperty(testProperty);
       expect(action.describe()).toBe("Removed property 'existingProp'");
     });
+
+    it('should remove ref from refIndex when removing property with direct ref', () => {
+      const refProperty = {
+        name: 'refProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'test-ref' } as ObjectOptions,
+      };
+      testSchema.properties = [refProperty];
+      testSchema.refIndex = ['test-ref'];
+
+      const action = new RemoveSchemaProperty(refProperty);
+      action.apply(testSchema);
+      expect(testSchema.refIndex).not.toContain('test-ref');
+    });
+
+    it('should remove ref from refIndex when removing array property with ref child options', () => {
+      const arrayProperty = {
+        name: 'arrayProp',
+        type: PropertyType.Array,
+        nullable: false,
+        options: {
+          childType: PropertyType.Object,
+          childOptions: { objectType: 'ref', refId: 'test-ref' } as Reference,
+        } as ArrayOptions,
+      };
+      testSchema.properties = [arrayProperty];
+      testSchema.refIndex = ['test-ref'];
+
+      const action = new RemoveSchemaProperty(arrayProperty);
+      action.apply(testSchema);
+      expect(testSchema.refIndex).not.toContain('test-ref');
+    });
+
+    it('should restore ref to refIndex when reverting removal of property with direct ref', () => {
+      const refProperty = {
+        name: 'refProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'test-ref' } as ObjectOptions,
+      };
+      testSchema.properties = [refProperty];
+      testSchema.refIndex = ['test-ref'];
+
+      const action = new RemoveSchemaProperty(refProperty);
+      action.apply(testSchema);
+      action.revert(testSchema);
+      expect(testSchema.refIndex).toContain('test-ref');
+    });
+
+    it('should restore ref to refIndex when reverting removal of array property with ref child options', () => {
+      const arrayProperty = {
+        name: 'arrayProp',
+        type: PropertyType.Array,
+        nullable: false,
+        options: {
+          childType: PropertyType.Object,
+          childOptions: { objectType: 'ref', refId: 'test-ref' } as Reference,
+        } as ArrayOptions,
+      };
+      testSchema.properties = [arrayProperty];
+      testSchema.refIndex = ['test-ref'];
+
+      const action = new RemoveSchemaProperty(arrayProperty);
+      action.apply(testSchema);
+      action.revert(testSchema);
+      expect(testSchema.refIndex).toContain('test-ref');
+    });
   });
 
   describe('UpdateSchemaProperty', () => {
@@ -163,6 +296,7 @@ describe('EditActions', () => {
         created: 1,
         modified: 1,
         properties: [beforeProperty],
+        refIndex: [],
       };
     });
 
@@ -198,6 +332,129 @@ describe('EditActions', () => {
       const action = new UpdateSchemaProperty(beforeProperty, afterProperty);
       expect(action.describe()).toBe("Updated property 'testProp'");
     });
+
+    it('should add ref to refIndex when updating to property with direct ref', () => {
+      const afterPropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'test-ref' } as ObjectOptions,
+      };
+      const action = new UpdateSchemaProperty(
+        beforeProperty,
+        afterPropertyWithRef,
+      );
+      action.apply(testSchema);
+      expect(testSchema.refIndex).toContain('test-ref');
+    });
+
+    it('should add ref to refIndex when updating to array property with ref child options', () => {
+      const afterPropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Array,
+        nullable: false,
+        options: {
+          childType: PropertyType.Object,
+          childOptions: { objectType: 'ref', refId: 'test-ref' } as Reference,
+        } as ArrayOptions,
+      };
+      const action = new UpdateSchemaProperty(
+        beforeProperty,
+        afterPropertyWithRef,
+      );
+      action.apply(testSchema);
+      expect(testSchema.refIndex).toContain('test-ref');
+    });
+
+    it('should remove ref from refIndex when updating from property with direct ref', () => {
+      const beforePropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'test-ref' } as ObjectOptions,
+      };
+      testSchema.properties = [beforePropertyWithRef];
+      testSchema.refIndex = ['test-ref'];
+
+      const action = new UpdateSchemaProperty(
+        beforePropertyWithRef,
+        afterProperty,
+      );
+      action.apply(testSchema);
+      expect(testSchema.refIndex).not.toContain('test-ref');
+    });
+
+    it('should remove ref from refIndex when updating from array property with ref child options', () => {
+      const beforePropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Array,
+        nullable: false,
+        options: {
+          childType: PropertyType.Object,
+          childOptions: { objectType: 'ref', refId: 'test-ref' } as Reference,
+        } as ArrayOptions,
+      };
+      testSchema.properties = [beforePropertyWithRef];
+      testSchema.refIndex = ['test-ref'];
+
+      const action = new UpdateSchemaProperty(
+        beforePropertyWithRef,
+        afterProperty,
+      );
+      action.apply(testSchema);
+      expect(testSchema.refIndex).not.toContain('test-ref');
+    });
+
+    it('should update ref in refIndex when changing ref id', () => {
+      const beforePropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'old-ref' } as ObjectOptions,
+      };
+      const afterPropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'new-ref' } as ObjectOptions,
+      };
+      testSchema.properties = [beforePropertyWithRef];
+      testSchema.refIndex = ['old-ref'];
+
+      const action = new UpdateSchemaProperty(
+        beforePropertyWithRef,
+        afterPropertyWithRef,
+      );
+      action.apply(testSchema);
+      expect(testSchema.refIndex).not.toContain('old-ref');
+      expect(testSchema.refIndex).toContain('new-ref');
+    });
+
+    it('should restore original ref in refIndex when reverting', () => {
+      const beforePropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'old-ref' } as ObjectOptions,
+      };
+      const afterPropertyWithRef = {
+        name: 'testProp',
+        type: PropertyType.Object,
+        nullable: false,
+        options: { objectType: 'ref', refId: 'new-ref' } as ObjectOptions,
+      };
+      testSchema.properties = [beforePropertyWithRef];
+      testSchema.refIndex = ['old-ref'];
+
+      const action = new UpdateSchemaProperty(
+        beforePropertyWithRef,
+        afterPropertyWithRef,
+      );
+      action.apply(testSchema);
+      action.revert(testSchema);
+      expect(testSchema.refIndex).toContain('old-ref');
+      expect(testSchema.refIndex).not.toContain('new-ref');
+    });
   });
 
   describe('UpdateChildProperty', () => {
@@ -232,6 +489,7 @@ describe('EditActions', () => {
         created: 1,
         modified: 1,
         properties: [parentProperty],
+        refIndex: [],
       };
     });
 
@@ -304,7 +562,7 @@ describe('EditActions', () => {
       const action = new UpdateChildProperty(enumProperty, innerAction);
       action.apply(testSchema);
       expect(
-        (testSchema.properties[0].options as EnumOptions).values[0].value,
+        (testSchema.properties[0].options as EnumOptions).values![0].value,
       ).toBe('NEW');
     });
 
@@ -385,7 +643,7 @@ describe('EditActions', () => {
         (
           (testSchema.properties[0].options as ArrayOptions)
             .childOptions as EnumOptions
-        ).values[0].value,
+        ).values![0].value,
       ).toBe('NEW');
     });
 
@@ -422,7 +680,7 @@ describe('EditActions', () => {
         (
           (testSchema.properties[0].options as ArrayOptions)
             .childOptions as EnumOptions
-        ).values[0].value,
+        ).values![0].value,
       ).toBe('OLD');
     });
   });

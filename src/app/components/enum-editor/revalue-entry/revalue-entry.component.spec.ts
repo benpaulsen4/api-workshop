@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { RevalueEntryComponent } from './revalue-entry.component';
 import { BehaviorSubject } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -12,12 +17,13 @@ describe('RevalueEntryComponent', () => {
     existingValues = new BehaviorSubject<(string | number)[]>(['existing']);
 
     await TestBed.configureTestingModule({
-      imports: [RevalueEntryComponent, BrowserAnimationsModule]
+      imports: [RevalueEntryComponent, BrowserAnimationsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RevalueEntryComponent);
     component = fixture.componentInstance;
-    (component as any).existingEntryValues = () => existingValues.asObservable();
+    (component as any).existingEntryValues = () =>
+      existingValues.asObservable();
     (component as any).enumType = () => 'string';
     fixture.detectChanges();
   });

@@ -62,8 +62,7 @@ export class AddSchemaProperty implements EditAction {
     }
 
     (currentState as Schema).properties.splice(this.index, 1);
-
-    if (this.refIndex && this.refIndex !== -1) {
+    if (this.refIndex !== undefined && this.refIndex !== -1) {
       (currentState as Schema).refIndex.splice(this.refIndex, 1);
     }
   }
@@ -110,7 +109,7 @@ export class RemoveSchemaProperty implements EditAction {
 
     (currentState as Schema).properties.splice(this.index, 0, this.property);
 
-    if (this.refIndex && this.refIndex !== -1 && this.ref) {
+    if (this.refIndex !== undefined && this.refIndex !== -1 && this.ref) {
       (currentState as Schema).refIndex.splice(this.refIndex, 0, this.ref);
     }
   }

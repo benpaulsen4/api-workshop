@@ -17,12 +17,18 @@ describe('PropertyComponent', () => {
   let fixture: ComponentFixture<PropertyComponent>;
   let existingNames: BehaviorSubject<string[]>;
   let schemaLookup: Record<string, string>;
+  let enumLookup: Record<string, string>;
 
   beforeEach(async () => {
     existingNames = new BehaviorSubject<string[]>(['existingProp']);
     schemaLookup = {
       User: 'User',
       Address: 'Address',
+    };
+
+    enumLookup = {
+      Status: 'status-enum-id',
+      Role: 'role-enum-id',
     };
 
     await TestBed.configureTestingModule({
@@ -43,6 +49,7 @@ describe('PropertyComponent', () => {
       existingNames.asObservable(),
     );
     (component.existingSchemaLookup as any) = signal(schemaLookup);
+    (component.enumLookup as any) = signal(enumLookup);
     fixture.detectChanges();
   });
 
@@ -73,7 +80,7 @@ describe('PropertyComponent', () => {
     });
 
     expect(component.typeString()).toBe('array (string)?');
-    expect(component.hasChildProperties()).toBeFalse();
+    expect(component.isObjectAdjacent()).toBeFalse();
   });
 
   it('should handle object type properties', () => {
@@ -93,12 +100,12 @@ describe('PropertyComponent', () => {
       },
     });
 
+    expect(component.isObjectAdjacent()).toBeTrue();
     expect(component.hasChildProperties()).toBeTrue();
-    expect(component.canAddChildProperties()).toBeTrue();
     expect(component.childProperties().length).toBe(1);
   });
 
-  it('should handle enum type properties', () => {
+  it('should handle inline enum type properties', () => {
     (component.property as any).set({
       ...component.property(),
       type: PropertyType.Enum,
@@ -111,8 +118,42 @@ describe('PropertyComponent', () => {
       },
     });
 
-    expect(component.hasEnumValues()).toBeTrue();
+    expect(component.isEnumAdjacent()).toBeTrue();
     expect(component.enumValues().length).toBe(2);
+    expect(component.typeString()).toBe('enum (string)?');
+  });
+
+  it('should handle referenced enum type properties', () => {
+    (component.property as any).set({
+      ...component.property(),
+      type: PropertyType.Enum,
+      options: {
+        enumType: 'ref',
+        refId: 'status-enum-id',
+      },
+    });
+
+    expect(component.isEnumAdjacent()).toBeTrue();
+    expect(component.hasEnumValues()).toBeFalse();
+    expect(component.typeString()).toBe('enum (Status)?');
+  });
+
+  it('should handle array of referenced enum type properties', () => {
+    (component.property as any).set({
+      ...component.property(),
+      type: PropertyType.Array,
+      options: {
+        childType: PropertyType.Enum,
+        childOptions: {
+          enumType: 'ref',
+          refId: 'role-enum-id',
+        },
+      },
+    });
+
+    expect(component.isEnumAdjacent()).toBeTrue();
+    expect(component.hasEnumValues()).toBeFalse();
+    expect(component.typeString()).toBe('array (enum (Role))?');
   });
 
   it('should emit property updates', () => {

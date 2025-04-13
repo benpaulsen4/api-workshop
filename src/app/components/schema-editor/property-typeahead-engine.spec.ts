@@ -5,10 +5,16 @@ describe('PropertyTypeaheadEngine', () => {
   let engine: PropertyTypeaheadEngine;
 
   beforeEach(() => {
-    engine = new PropertyTypeaheadEngine({
-      User: 'user-schema-id',
-      Address: 'address-schema-id',
-    });
+    engine = new PropertyTypeaheadEngine(
+      {
+        User: 'user-schema-id',
+        Address: 'address-schema-id',
+      },
+      {
+        Status: 'status-enum-id',
+        Priority: 'priority-enum-id',
+      },
+    );
   });
 
   describe('parse', () => {
@@ -103,7 +109,21 @@ describe('PropertyTypeaheadEngine', () => {
     it('should reject invalid enum qualifier', () => {
       const result = engine.parse('enum(float)');
       expect(result.error).toBe(
-        'Enum type must have qualifier "string" or "int"',
+        'Enum must have the type "string" or "int" or be a valid reference',
+      );
+    });
+
+    it('should parse enum with reference qualifier', () => {
+      const result = engine.parse('enum(Status)');
+      expect(result.error).toBeUndefined();
+      expect(result.baseType).toBe(PropertyType.Enum);
+      expect(result.qualifier).toBe('Status');
+    });
+
+    it('should reject invalid enum reference', () => {
+      const result = engine.parse('enum(InvalidEnum)');
+      expect(result.error).toBe(
+        'Enum must have the type "string" or "int" or be a valid reference',
       );
     });
   });
@@ -122,6 +142,8 @@ describe('PropertyTypeaheadEngine', () => {
       expect(suggestions).toContain('array (boolean)');
       expect(suggestions).toContain('enum (string)');
       expect(suggestions).toContain('enum (int)');
+      expect(suggestions).toContain('enum (Status)');
+      expect(suggestions).toContain('enum (Priority)');
     });
 
     it('should filter suggestions based on partial type name', () => {
@@ -151,7 +173,10 @@ describe('PropertyTypeaheadEngine', () => {
 
     it('should suggest qualifiers for enum type', () => {
       const suggestions = engine.getSuggestions('enum(');
-      expect(suggestions).toEqual(['enum(string)', 'enum(int)']);
+      expect(suggestions).toContain('enum(string)');
+      expect(suggestions).toContain('enum(int)');
+      expect(suggestions).toContain('enum(Status)');
+      expect(suggestions).toContain('enum(Priority)');
     });
 
     it('should filter qualifiers based on partial input', () => {
@@ -159,7 +184,7 @@ describe('PropertyTypeaheadEngine', () => {
       expect(suggestions).toEqual(['number(int)']);
     });
 
-    //TODO this test will technically fail if you don't include any spaces, and no suggestions will be returned
+    // TODO this test will technically fail if you don't include any spaces, and no suggestions will be returned
     it('should handle nested type suggestions', () => {
       const suggestions = engine.getSuggestions('array (number (');
       expect(suggestions).toEqual([
@@ -331,6 +356,34 @@ describe('PropertyTypeaheadEngine', () => {
       };
       const property = engine.toProperty(result, 'testProp');
       expect(property).toBeNull();
+    });
+
+    it('should convert enum type with reference qualifier', () => {
+      const result = engine.parse('enum(Status)');
+      const property = engine.toProperty(result, 'testProp');
+      expect(property).toEqual({
+        name: 'testProp',
+        type: PropertyType.Enum,
+        nullable: false,
+        options: {
+          enumType: 'ref',
+          refId: 'status-enum-id',
+        },
+      });
+    });
+
+    it('should convert nullable enum type with reference qualifier', () => {
+      const result = engine.parse('enum(Priority)?');
+      const property = engine.toProperty(result, 'testProp');
+      expect(property).toEqual({
+        name: 'testProp',
+        type: PropertyType.Enum,
+        nullable: true,
+        options: {
+          enumType: 'ref',
+          refId: 'priority-enum-id',
+        },
+      });
     });
   });
 });

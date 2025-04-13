@@ -9,15 +9,15 @@ describe('SchemaToJsonSchemaExportService', () => {
   let service: SchemaToJsonSchemaExportService;
   let mockDownloadService: jasmine.SpyObj<ContentDownloadService>;
   let mockDataService: jasmine.SpyObj<DataService>;
-  let mockSchemaCollection: jasmine.SpyObj<RxCollection>;
+  let mockDataCollection: jasmine.SpyObj<RxCollection>;
 
   beforeEach(() => {
     mockDownloadService = jasmine.createSpyObj('ContentDownloadService', [
       'downloadFromTextData',
     ]);
-    mockSchemaCollection = jasmine.createSpyObj('RxCollection', ['findOne']);
+    mockDataCollection = jasmine.createSpyObj('RxCollection', ['findOne']);
     mockDataService = jasmine.createSpyObj('DataService', ['getCollection']);
-    mockDataService.getCollection.and.returnValue(mockSchemaCollection);
+    mockDataService.getCollection.and.returnValue(mockDataCollection);
     TestBed.configureTestingModule({
       providers: [
         SchemaToJsonSchemaExportService,
@@ -49,6 +49,7 @@ describe('SchemaToJsonSchemaExportService', () => {
           options: { doublePrecision: true },
         },
       ],
+      refIndex: [],
     };
 
     await service.export(schema);
@@ -91,6 +92,7 @@ describe('SchemaToJsonSchemaExportService', () => {
           },
         },
       ],
+      refIndex: [],
     };
 
     await service.export(schema);
@@ -122,6 +124,7 @@ describe('SchemaToJsonSchemaExportService', () => {
           },
         },
       ],
+      refIndex: [],
     };
 
     await service.export(schema);
@@ -160,6 +163,7 @@ describe('SchemaToJsonSchemaExportService', () => {
           },
         },
       ],
+      refIndex: [],
     };
 
     await service.export(schema);
@@ -189,6 +193,7 @@ describe('SchemaToJsonSchemaExportService', () => {
           nullable: false,
         },
       ],
+      refIndex: [],
     };
 
     const schema: Schema = {
@@ -207,12 +212,13 @@ describe('SchemaToJsonSchemaExportService', () => {
           },
         },
       ],
+      refIndex: ['referenced-schema'],
     };
 
     const mockExec = jasmine.createSpy().and.returnValue({
       toMutableJSON: () => referencedSchema,
     });
-    mockSchemaCollection.findOne.and.returnValue({ exec: mockExec } as any);
+    mockDataCollection.findOne.and.returnValue({ exec: mockExec } as any);
 
     await service.export(schema);
 
@@ -245,6 +251,7 @@ describe('SchemaToJsonSchemaExportService', () => {
           },
         },
       ],
+      refIndex: ['recursive-schema'],
     };
 
     await service.export(schema);
@@ -253,5 +260,64 @@ describe('SchemaToJsonSchemaExportService', () => {
       mockDownloadService.downloadFromTextData.calls.first().args[0],
     );
     expect(downloadedContent.properties.recursiveProp.$ref).toBe('#');
+  });
+
+  it('should handle referenced enum type properties', async () => {
+    const referencedEnum = {
+      id: 'referenced-enum',
+      name: 'ReferencedEnum',
+      created: 1234567890,
+      modified: 1234567890,
+      enumType: 'string',
+      values: [
+        { name: 'First', value: 'FIRST' },
+        { name: 'Second', value: 'SECOND' },
+      ],
+    };
+
+    const schema: Schema = {
+      id: 'test-enum-ref',
+      name: 'TestEnumRef',
+      created: 1234567890,
+      modified: 1234567890,
+      properties: [
+        {
+          name: 'enumRefProp',
+          type: PropertyType.Enum,
+          nullable: false,
+          options: {
+            enumType: 'ref',
+            refId: 'referenced-enum',
+          },
+        },
+      ],
+      refIndex: ['referenced-enum'],
+    };
+
+    const mockEnumExec = jasmine.createSpy().and.returnValue({
+      toMutableJSON: () => referencedEnum,
+    });
+
+    mockDataCollection.findOne.and.returnValue({ exec: mockEnumExec } as any);
+
+    await service.export(schema);
+
+    const downloadedContent = JSON.parse(
+      mockDownloadService.downloadFromTextData.calls.first().args[0],
+    );
+    expect(downloadedContent.properties.enumRefProp.$ref).toBe(
+      '#/$defs/referencedEnum',
+    );
+    expect(downloadedContent.$defs.referencedEnum).toBeDefined();
+    expect(downloadedContent.$defs.referencedEnum.type).toBe('string');
+    expect(downloadedContent.$defs.referencedEnum.enum).toEqual([
+      'FIRST',
+      'SECOND',
+    ]);
+    expect(
+      downloadedContent.$defs.referencedEnum[
+        SchemaToJsonSchemaExportService.MetadataKey
+      ].enumMappings,
+    ).toEqual({ FIRST: 'First', SECOND: 'Second' });
   });
 });

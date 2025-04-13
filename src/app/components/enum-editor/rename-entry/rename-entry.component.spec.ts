@@ -1,4 +1,9 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import { RenameEntryComponent } from './rename-entry.component';
 import { BehaviorSubject } from 'rxjs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -12,7 +17,7 @@ describe('RenameEntryComponent', () => {
     existingNames = new BehaviorSubject<string[]>(['Existing']);
 
     await TestBed.configureTestingModule({
-      imports: [RenameEntryComponent, BrowserAnimationsModule]
+      imports: [RenameEntryComponent, BrowserAnimationsModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(RenameEntryComponent);

@@ -1,17 +1,17 @@
-:host{
-    display: flex;
-    flex-direction: row;
-    height: calc(100vh - 16px);
+:host {
+  display: flex;
+  flex-direction: row;
+  height: calc(100vh - 16px);
 }
 
 nav {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .h-divider {
-    width: 2px;
-    background: var(--p-toolbar-border-color);
-    margin: 0 12px;
-  }
+  width: 2px;
+  background: var(--p-toolbar-border-color);
+  margin: 0 12px;
+}

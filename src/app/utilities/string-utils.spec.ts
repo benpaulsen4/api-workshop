@@ -7,7 +7,9 @@ describe('StringUtils', () => {
     });
 
     it('should handle strings with multiple spaces', () => {
-      expect(StringUtils.toCamelCase('hello  world  test')).toBe('helloWorldTest');
+      expect(StringUtils.toCamelCase('hello  world  test')).toBe(
+        'helloWorldTest',
+      );
     });
 
     it('should handle already camel case strings', () => {
@@ -29,7 +31,9 @@ describe('StringUtils', () => {
     });
 
     it('should handle strings with multiple spaces', () => {
-      expect(StringUtils.toPascalCase('hello  world  test')).toBe('HelloWorldTest');
+      expect(StringUtils.toPascalCase('hello  world  test')).toBe(
+        'HelloWorldTest',
+      );
     });
 
     it('should handle already pascal case strings', () => {
@@ -51,7 +55,9 @@ describe('StringUtils', () => {
     });
 
     it('should handle strings with multiple spaces', () => {
-      expect(StringUtils.toKebabCase('hello  world  test')).toBe('hello-world-test');
+      expect(StringUtils.toKebabCase('hello  world  test')).toBe(
+        'hello-world-test',
+      );
     });
 
     it('should handle camel case strings', () => {
@@ -77,7 +83,9 @@ describe('StringUtils', () => {
     });
 
     it('should handle strings with multiple spaces', () => {
-      expect(StringUtils.toSnakeCase('hello  world  test')).toBe('hello_world_test');
+      expect(StringUtils.toSnakeCase('hello  world  test')).toBe(
+        'hello_world_test',
+      );
     });
 
     it('should handle camel case strings', () => {

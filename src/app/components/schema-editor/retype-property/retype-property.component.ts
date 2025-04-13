@@ -31,7 +31,6 @@ export class RetypePropertyComponent implements OnInit {
   typeaheadEngine?: PropertyTypeaheadEngine;
 
   ngOnInit(): void {
-    console.log(this.enumLookup());
     // BUG the reference lookups here don't work
     this.typeaheadEngine = new PropertyTypeaheadEngine(
       this.existingSchemaLookup(),
