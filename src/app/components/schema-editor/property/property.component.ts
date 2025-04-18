@@ -143,6 +143,13 @@ export class PropertyComponent {
       (this.property().options as ArrayOptions)?.childType ===
         PropertyType.Array,
   );
+  readonly showUnknownWarning = computed(
+    () =>
+      this.property().type === PropertyType.Unknown ||
+      (this.property().type === PropertyType.Array &&
+        (this.property().options as ArrayOptions).childType ===
+          PropertyType.Unknown),
+  );
 
   readonly addMode = signal(false);
 
@@ -236,7 +243,7 @@ export class PropertyComponent {
   }
 
   getTypeString(prop: Property): string {
-    let baseString = 'unknown';
+    let baseString = 'invalid';
     switch (prop.type) {
       case PropertyType.String:
         baseString = 'string';
@@ -262,6 +269,9 @@ export class PropertyComponent {
         baseString = `enum (${castedOptions.enumType === 'ref' ? Object.entries(this.enumLookup() ?? {}).find((e) => e[1] == castedOptions.refId)?.[0] : castedOptions.enumType})`;
         break;
       }
+      case PropertyType.Unknown:
+        baseString = 'unknown';
+        break;
     }
 
     if (prop.nullable) {

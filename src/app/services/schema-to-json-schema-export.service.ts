@@ -7,6 +7,7 @@ import {
   Property,
   PropertyType,
   Schema,
+  UnknownOptions,
 } from '../models/schema';
 import { ContentDownloadService } from './content-download.service';
 import { StringUtils } from '../utilities/string-utils';
@@ -199,6 +200,8 @@ export class SchemaToJsonSchemaExportService {
           };
         }
       }
+      case PropertyType.Unknown:
+        return (property.options as UnknownOptions).originalDefinition;
       default:
         throw new Error('Unknown property type');
     }

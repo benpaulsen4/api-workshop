@@ -16,6 +16,19 @@
     </p-message>
   }
 
+  @if (showUnknownWarning()) {
+    <p-message size="small" severity="warn" icon="pi pi-exclamation-triangle">
+      We couldn't parse this property on import.
+      <u
+        pTooltip="The property may use features or types that we don't support yet. 
+
+        We have stored the original definition from the imported schema. As long as you don't edit this property, 
+        we will attempt to export it as it was."
+        >What does this mean?</u
+      >
+    </p-message>
+  }
+
   <div class="h-divider"></div>
 
   @if (

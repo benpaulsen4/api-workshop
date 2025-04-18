@@ -22,6 +22,10 @@ export class PropertyTypeaheadEngine {
     PropertyType.Enum,
   ]);
 
+  private static AssignableTypes = Object.values(PropertyType).filter(
+    (t) => t !== PropertyType.Unknown,
+  );
+
   constructor(
     private availableSchemas: Record<string, string> = {},
     private availableEnums: Record<string, string> = {},
@@ -45,7 +49,7 @@ export class PropertyTypeaheadEngine {
 
     // If no parenthesis, it's a simple type
     if (openParenIndex === -1) {
-      const baseType = Object.values(PropertyType).find(
+      const baseType = PropertyTypeaheadEngine.AssignableTypes.find(
         (type) => type.toLowerCase() === input.toLowerCase(),
       );
 
@@ -71,7 +75,7 @@ export class PropertyTypeaheadEngine {
 
     // Extract base type and qualifier
     const baseTypeStr = input.slice(0, openParenIndex).trim();
-    const baseType = Object.values(PropertyType).find(
+    const baseType = PropertyTypeaheadEngine.AssignableTypes.find(
       (type) => type.toLowerCase() === baseTypeStr.toLowerCase(),
     );
 
@@ -119,13 +123,15 @@ export class PropertyTypeaheadEngine {
     input = input.trim();
 
     if (!input) {
-      return this.getQualifiedBaseSuggestions(Object.values(PropertyType));
+      return this.getQualifiedBaseSuggestions(
+        PropertyTypeaheadEngine.AssignableTypes,
+      );
     }
 
     // If partial type name without parenthesis
     if (!input.includes('(')) {
-      const matchingTypes = Object.values(PropertyType).filter((type) =>
-        type.toLowerCase().startsWith(input.toLowerCase()),
+      const matchingTypes = PropertyTypeaheadEngine.AssignableTypes.filter(
+        (type) => type.toLowerCase().startsWith(input.toLowerCase()),
       );
 
       return this.getQualifiedBaseSuggestions(matchingTypes);
@@ -150,7 +156,7 @@ export class PropertyTypeaheadEngine {
 
       case PropertyType.Array:
         return this.getQualifiedBaseSuggestions(
-          Object.values(PropertyType).filter((type) =>
+          PropertyTypeaheadEngine.AssignableTypes.filter((type) =>
             type.toLowerCase().startsWith(partialQualifier.toLowerCase()),
           ),
         ).map((q) => this.completeTypeString(input, q));
@@ -180,11 +186,9 @@ export class PropertyTypeaheadEngine {
             ];
           //For arrays, initially only suggest unqualified types to prevent infinite suggestions
           case PropertyType.Array:
-            return Object.values(PropertyType)
-              .filter(
-                (t) => !PropertyTypeaheadEngine.MandatoryQualifierTypes.has(t),
-              )
-              .map((t) => `array (${t})`);
+            return PropertyTypeaheadEngine.AssignableTypes.filter(
+              (t) => !PropertyTypeaheadEngine.MandatoryQualifierTypes.has(t),
+            ).map((t) => `array (${t})`);
           case PropertyType.Enum:
             return [
               'enum (string)',

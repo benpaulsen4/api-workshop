@@ -22,7 +22,8 @@ export type PropertyOptions =
   | NumberOptions
   | ObjectOptions
   | ArrayOptions
-  | EnumOptions;
+  | EnumOptions
+  | UnknownOptions;
 
 export enum PropertyType {
   String = 'string',
@@ -31,6 +32,7 @@ export enum PropertyType {
   Object = 'object',
   Array = 'array',
   Enum = 'enum',
+  Unknown = 'unknown', // For use only when an imported property uses unsupported features
 }
 
 export interface NumberOptions {
@@ -58,8 +60,12 @@ export interface Reference {
   refId?: string;
 }
 
+export interface UnknownOptions {
+  originalDefinition: object;
+}
+
 export const SchemaSchema = {
-  version: 2,
+  version: 3,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -84,7 +90,15 @@ export const SchemaSchema = {
           name: { type: 'string' },
           type: {
             type: 'string',
-            enum: ['string', 'number', 'boolean', 'object', 'array', 'enum'],
+            enum: [
+              'string',
+              'number',
+              'boolean',
+              'object',
+              'array',
+              'enum',
+              'unknown',
+            ],
           },
           nullable: { type: 'boolean' },
           options: { type: 'object' },
