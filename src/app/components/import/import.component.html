@@ -1,0 +1,17 @@
+<input
+  #import
+  type="file"
+  accept=".json,.jsonschema,application/json,application/schema+json"
+  (change)="onImport($event)"
+/>
+
+<p-button
+  label="Import"
+  icon="pi pi-upload"
+  variant="outlined"
+  severity="secondary"
+  size="large"
+  fluid="true"
+  [loading]="importLoading()"
+  (click)="import.click()"
+></p-button>

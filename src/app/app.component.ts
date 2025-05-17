@@ -9,11 +9,12 @@ import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Router, RouterOutlet } from '@angular/router';
 import { Enum } from './models/enum';
+import { ImportComponent } from './components/import/import.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [EntityPanelComponent, Toast, RouterOutlet],
+  imports: [EntityPanelComponent, Toast, RouterOutlet, ImportComponent],
   providers: [MessageService],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
