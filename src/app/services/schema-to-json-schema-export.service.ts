@@ -143,7 +143,7 @@ export class SchemaToJsonSchemaExportService {
         } else {
           if (objectOptions.refId === currentSchemaId) {
             //special handling for recursive schemas
-            // TODO does this work if the recursive schema is itself a def?
+            // TODO does this work if the recursive schema is itself a def? // BUG (no, no it does not)
             return {
               $ref: '#',
             };

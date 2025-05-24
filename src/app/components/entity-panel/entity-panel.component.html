@@ -1,25 +1,25 @@
 <p-panel>
   <ng-template #header>
     <div class="panel-item">
-      <span class="header">{{ entityName() }}s</span>
+      <span class="header">{{ entity() }}</span>
       <p-button
         icon="pi pi-plus"
         text="true"
-        [ariaLabel]="'Create ' + entityName()"
-        [pTooltip]="'Create ' + entityName()"
+        [ariaLabel]="'Create ' + entity().slice(0, -1)"
+        [pTooltip]="'Create ' + entity().slice(0, -1)"
         tooltipPosition="top"
         showDelay="500"
         (click)="create.toggle($event)"
       ></p-button>
     </div>
   </ng-template>
-  @for (item of items() | async; track item.id) {
-    <button
+  @for (item of items$ | async; track item.id) {
+    <a
+      [routerLink]="[entity(), item.id]"
+      routerLinkActive="selected"
       class="unstyled panel-item hover"
-      [class.selected]="
-        item.id === selectedItem() || item.id === activeMenuItemId()
-      "
-      (click)="itemClick.emit(item.id)"
+      [class.selected-alt]="item.id === activeMenuItemId()"
+      (click)="(true)"
     >
       <span class="name">{{ item.name }}</span>
       <p-button
@@ -29,13 +29,23 @@
         pTooltip="Actions"
         tooltipPosition="top"
         showDelay="500"
-        (click)="onOpenActionMenu(item.id, actionMenu, $event); (true)"
+        (click)="onOpenActionMenu(item.id, actionMenu, $event)"
       ></p-button>
-    </button>
+    </a>
   } @empty {
     <div class="empty">
       <i class="pi pi-search"></i>
       <span>Nothing to see here...</span>
+    </div>
+  }
+
+  @if ((count$ | async)! > this.maxItems()) {
+    <div class="count">
+      Showing {{ this.maxItems() }} of {{ count$ | async }}
+      <i
+        class="pi pi-question-circle"
+        pTooltip="To save screen space, only the most recent entries are shown. Use search to access entries not in this list."
+      ></i>
     </div>
   }
 </p-panel>
@@ -66,7 +76,7 @@
 
   @if (nameControl.errors && nameControl.errors["duplicate"]) {
     <small id="name-help" class="invalid"
-      >A {{ entityName() }} with this name already exists</small
+      >A {{ entity().slice(0, -1) }} with this name already exists</small
     >
   }
 </p-popover>

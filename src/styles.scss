@@ -39,12 +39,14 @@ kbd {
   }
 }
 
-button.unstyled {
+button.unstyled, a.unstyled  {
   appearance: none;
   background: none;
   border: none;
   padding: 0;
   font: unset;
+  color: unset;
+  text-decoration: unset;
 
   &:not(:disabled) {
     cursor: pointer;

@@ -4,21 +4,9 @@
   Error initializing database: {{ error() }}
 } @else {
   <nav>
-    <app-entity-panel
-      entityName="schema"
-      [items]="schemas"
-      (itemClick)="onSelectSchema($event)"
-      (create)="onCreateSchema($event)"
-      (delete)="onDeleteSchema($event)"
-    ></app-entity-panel>
+    <app-entity-panel [entity]="dataCollections.Schemas"></app-entity-panel>
 
-    <app-entity-panel
-      entityName="enum"
-      [items]="enums"
-      (itemClick)="onSelectEnum($event)"
-      (create)="onCreateEnum($event)"
-      (delete)="onDeleteEnum($event)"
-    ></app-entity-panel>
+    <app-entity-panel [entity]="dataCollections.Enums"></app-entity-panel>
 
     <app-import></app-import>
   </nav>

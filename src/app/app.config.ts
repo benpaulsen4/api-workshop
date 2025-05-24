@@ -56,7 +56,7 @@ const Noir = definePreset(Aura, {
   components: {
     panel: {
       contentPadding: '12px',
-      headerPadding: '12px',
+      headerPadding: '12px 12px 0 12px',
     },
   },
 });
