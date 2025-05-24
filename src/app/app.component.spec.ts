@@ -6,10 +6,6 @@ import {
 } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { DataService } from './services/data.service';
-import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { BehaviorSubject } from 'rxjs';
-import { Schema } from './models/schema';
 import { Toast } from 'primeng/toast';
 import { EntityPanelComponent } from './components/entity-panel/entity-panel.component';
 

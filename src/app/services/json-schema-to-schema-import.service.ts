@@ -55,20 +55,20 @@ export class JsonSchemaToSchemaImportService {
     this.importSchema(jsonSchema, '#');
 
     await Promise.all([
-      ...Object.values(this.enumsToCreate).map((enumToCreate) =>
+      ...Object.values(this.enumsToCreate).map(enumToCreate =>
         this.enumCollection.insert(enumToCreate),
       ),
-      ...Object.values(this.schemasToCreate).map((schemaToCreate) =>
+      ...Object.values(this.schemasToCreate).map(schemaToCreate =>
         this.schemaCollection.insert(schemaToCreate),
       ),
     ]);
 
     return new ImportResult({
-      schemas: Object.values(this.schemasToCreate).map((s) => ({
+      schemas: Object.values(this.schemasToCreate).map(s => ({
         name: s.name,
         id: s.id,
       })),
-      enums: Object.values(this.enumsToCreate).map((e) => ({
+      enums: Object.values(this.enumsToCreate).map(e => ({
         name: e.name,
         id: e.id,
       })),

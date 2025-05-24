@@ -72,13 +72,13 @@ export class EditStateService {
     if (!this.collection || !this.entity())
       throw new Error('Cannot edit: uninitialized');
 
-    this.entity.update((entity) => {
+    this.entity.update(entity => {
       action.apply(entity!);
       entity!.modified = Date.now();
       return entity;
     });
 
-    this.undoStack.update((s) => {
+    this.undoStack.update(s => {
       s.push(action);
       return [...s];
     });
@@ -94,20 +94,20 @@ export class EditStateService {
 
     let lastEdit: EditAction | undefined;
 
-    this.undoStack.update((s) => {
+    this.undoStack.update(s => {
       lastEdit = s.pop();
       return [...s];
     });
 
     if (!lastEdit) throw new Error('Cannot undo: no changes to undo');
 
-    this.entity.update((entity) => {
+    this.entity.update(entity => {
       lastEdit!.revert(entity!);
       entity!.modified = Date.now();
       return entity;
     });
 
-    this.redoStack.update((s) => {
+    this.redoStack.update(s => {
       s.push(lastEdit!);
       return [...s];
     });
@@ -124,20 +124,20 @@ export class EditStateService {
 
     let lastUndo: EditAction | undefined;
 
-    this.redoStack.update((s) => {
+    this.redoStack.update(s => {
       lastUndo = s.pop();
       return [...s];
     });
 
     if (!lastUndo) throw new Error('Cannot redo: no undone changes to redo');
 
-    this.entity.update((entity) => {
+    this.entity.update(entity => {
       lastUndo!.apply(entity!);
       entity!.modified = Date.now();
       return entity;
     });
 
-    this.undoStack.update((s) => {
+    this.undoStack.update(s => {
       s.push(lastUndo!);
       return [...s];
     });

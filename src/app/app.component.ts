@@ -1,14 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { EntityPanelComponent } from './components/entity-panel/entity-panel.component';
-import { v7 } from 'uuid';
 import { DataCollections, DataService } from './services/data.service';
-import { from, Observable } from 'rxjs';
-import { NamedEntity } from './models/named-entity';
-import { Schema } from './models/schema';
+import { from } from 'rxjs';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { Router, RouterOutlet } from '@angular/router';
-import { Enum } from './models/enum';
+import { RouterOutlet } from '@angular/router';
 import { ImportComponent } from './components/import/import.component';
 
 @Component({
@@ -32,7 +28,7 @@ export class AppComponent implements OnInit {
       complete: () => {
         this.loading.set(false);
       },
-      error: (error) => {
+      error: error => {
         this.loading.set(false);
         this.error.set(error.message ?? error);
       },

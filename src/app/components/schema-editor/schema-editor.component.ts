@@ -62,7 +62,7 @@ export class SchemaEditorComponent implements OnInit {
         selector: { refIndex: this.schemaId() },
       })
       .exec()
-      .then((schemas) => {
+      .then(schemas => {
         this.schemaReferences.set(schemas);
       });
   });
@@ -74,7 +74,7 @@ export class SchemaEditorComponent implements OnInit {
 
   readonly propertiesSubject = new BehaviorSubject<Property[]>([]); //HACK temporary solution for signals shitty change detection on ref types (mostly arrays)
   readonly propertyNames = this.propertiesSubject.pipe(
-    map((a) => a.map((p) => p.name)),
+    map(a => a.map(p => p.name)),
   );
   readonly loading = signal(true);
   readonly addMode = signal(false);
@@ -97,7 +97,7 @@ export class SchemaEditorComponent implements OnInit {
       .getCollection(DataCollections.Schemas)
       .find()
       .exec()
-      .then((allSchemas) => {
+      .then(allSchemas => {
         this.allSchemaLookup = allSchemas.reduce((a, b) => {
           a[b.name] = b.id;
           return a;
@@ -108,7 +108,7 @@ export class SchemaEditorComponent implements OnInit {
       .getCollection(DataCollections.Enums)
       .find()
       .exec()
-      .then((allEnums) => {
+      .then(allEnums => {
         this.allEnumLookup = allEnums.reduce((a, b) => {
           a[b.name] = b.id;
           return a;

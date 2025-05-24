@@ -164,7 +164,7 @@ export class SchemaToJsonSchemaExportService {
         if (enumOptions.enumType === 'string') {
           return {
             type: 'string',
-            enum: enumOptions.values!.map((x) => x.value),
+            enum: enumOptions.values!.map(x => x.value),
             [SchemaToJsonSchemaExportService.MetadataKey]: {
               enumMappings: enumOptions.values!.reduce(
                 (acc, x) => {
@@ -178,7 +178,7 @@ export class SchemaToJsonSchemaExportService {
         } else if (enumOptions.enumType === 'int') {
           return {
             type: 'integer',
-            enum: enumOptions.values!.map((x) => x.value),
+            enum: enumOptions.values!.map(x => x.value),
             [SchemaToJsonSchemaExportService.MetadataKey]: {
               enumMappings: enumOptions.values!.reduce(
                 (acc, x) => {
@@ -240,7 +240,7 @@ export class SchemaToJsonSchemaExportService {
 
       defs[name] = {
         type: castedEnum.enumType === 'string' ? 'string' : 'integer',
-        enum: castedEnum.values.map((x) => x.value),
+        enum: castedEnum.values.map(x => x.value),
         [SchemaToJsonSchemaExportService.MetadataKey]: {
           id: castedEnum.id,
           created: castedEnum.created,

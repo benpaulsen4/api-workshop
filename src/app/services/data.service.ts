@@ -26,15 +26,15 @@ export class DataService {
       schemas: {
         schema: SchemaSchema,
         migrationStrategies: {
-          1: (oldDoc) => {
+          1: oldDoc => {
             oldDoc.properties = [];
             return oldDoc;
           },
-          2: (oldDoc) => {
+          2: oldDoc => {
             oldDoc.refIndex = [];
             return oldDoc;
           },
-          3: (oldDoc) => oldDoc,
+          3: oldDoc => oldDoc,
         },
       },
       enums: {

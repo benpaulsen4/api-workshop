@@ -81,7 +81,7 @@ export class RemoveSchemaProperty implements EditAction {
 
   apply<T>(currentState: T): void {
     this.index = (currentState as Schema).properties.findIndex(
-      (p) => p.name === this.property.name,
+      p => p.name === this.property.name,
     );
 
     if (this.index === undefined || this.index === -1)
@@ -95,7 +95,7 @@ export class RemoveSchemaProperty implements EditAction {
         ?.refId;
     if (this.ref) {
       this.refIndex = (currentState as Schema).refIndex.findIndex(
-        (i) => i === this.ref,
+        i => i === this.ref,
       );
       if (this.refIndex != -1) {
         (currentState as Schema).refIndex.splice(this.refIndex, 1);
@@ -130,7 +130,7 @@ export class UpdateSchemaProperty implements EditAction {
 
   apply<T>(currentState: T): void {
     const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name === this.before.name,
+      p => p.name === this.before.name,
     );
 
     if (index === -1)
@@ -148,7 +148,7 @@ export class UpdateSchemaProperty implements EditAction {
 
     if (this.beforeRef !== this.afterRef) {
       const index = (currentState as Schema).refIndex.findIndex(
-        (i) => i === this.beforeRef,
+        i => i === this.beforeRef,
       );
 
       if (this.beforeRef && index !== -1) {
@@ -163,7 +163,7 @@ export class UpdateSchemaProperty implements EditAction {
 
   revert<T>(currentState: T): void {
     const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name === this.after.name,
+      p => p.name === this.after.name,
     );
 
     if (index === -1)
@@ -176,7 +176,7 @@ export class UpdateSchemaProperty implements EditAction {
     if (this.beforeRef !== this.afterRef) {
       if (this.afterRef) {
         const index = (currentState as Schema).refIndex.findIndex(
-          (i) => i === this.afterRef,
+          i => i === this.afterRef,
         );
         if (index !== -1) {
           (currentState as Schema).refIndex.splice(index, 1);
@@ -250,7 +250,7 @@ export class UpdateChildProperty implements EditAction {
     }
 
     const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name === this.parent.name,
+      p => p.name === this.parent.name,
     );
 
     (currentState as Schema).properties.splice(index, 1, clone);
@@ -313,7 +313,7 @@ export class UpdateChildProperty implements EditAction {
     }
 
     const index = (currentState as Schema).properties.findIndex(
-      (p) => p.name === this.updatedParent!.name,
+      p => p.name === this.updatedParent!.name,
     );
 
     (currentState as Schema).properties.splice(index, 1, clone);
@@ -357,7 +357,7 @@ export class RemoveEnumEntry implements EditAction {
 
   apply<T>(currentState: T): void {
     this.index = (currentState as Enum).values.findIndex(
-      (p) => p.name === this.entry.name,
+      p => p.name === this.entry.name,
     );
 
     if (this.index === undefined || this.index === -1)
@@ -386,7 +386,7 @@ export class UpdateEnumEntry implements EditAction {
 
   apply<T>(currentState: T): void {
     const index = (currentState as Enum).values.findIndex(
-      (p) => p.name === this.before.name,
+      p => p.name === this.before.name,
     );
 
     if (index === -1)
@@ -397,7 +397,7 @@ export class UpdateEnumEntry implements EditAction {
 
   revert<T>(currentState: T): void {
     const index = (currentState as Enum).values.findIndex(
-      (p) => p.name === this.after.name,
+      p => p.name === this.after.name,
     );
 
     if (index === -1)

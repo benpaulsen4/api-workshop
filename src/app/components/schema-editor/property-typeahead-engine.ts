@@ -23,7 +23,7 @@ export class PropertyTypeaheadEngine {
   ]);
 
   private static AssignableTypes = Object.values(PropertyType).filter(
-    (t) => t !== PropertyType.Unknown,
+    t => t !== PropertyType.Unknown,
   );
 
   constructor(
@@ -50,7 +50,7 @@ export class PropertyTypeaheadEngine {
     // If no parenthesis, it's a simple type
     if (openParenIndex === -1) {
       const baseType = PropertyTypeaheadEngine.AssignableTypes.find(
-        (type) => type.toLowerCase() === input.toLowerCase(),
+        type => type.toLowerCase() === input.toLowerCase(),
       );
 
       if (!baseType) {
@@ -76,7 +76,7 @@ export class PropertyTypeaheadEngine {
     // Extract base type and qualifier
     const baseTypeStr = input.slice(0, openParenIndex).trim();
     const baseType = PropertyTypeaheadEngine.AssignableTypes.find(
-      (type) => type.toLowerCase() === baseTypeStr.toLowerCase(),
+      type => type.toLowerCase() === baseTypeStr.toLowerCase(),
     );
 
     if (!baseType) {
@@ -131,7 +131,7 @@ export class PropertyTypeaheadEngine {
     // If partial type name without parenthesis
     if (!input.includes('(')) {
       const matchingTypes = PropertyTypeaheadEngine.AssignableTypes.filter(
-        (type) => type.toLowerCase().startsWith(input.toLowerCase()),
+        type => type.toLowerCase().startsWith(input.toLowerCase()),
       );
 
       return this.getQualifiedBaseSuggestions(matchingTypes);
@@ -146,32 +146,32 @@ export class PropertyTypeaheadEngine {
     switch (currentType.toLowerCase()) {
       case PropertyType.Number:
         return ['int', 'double']
-          .filter((q) => q.startsWith(partialQualifier))
-          .map((q) => this.completeTypeString(input, q));
+          .filter(q => q.startsWith(partialQualifier))
+          .map(q => this.completeTypeString(input, q));
 
       case PropertyType.Object:
         return ['inline', ...Object.keys(this.availableSchemas)]
-          .filter((q) => q.startsWith(partialQualifier))
-          .map((q) => this.completeTypeString(input, q));
+          .filter(q => q.startsWith(partialQualifier))
+          .map(q => this.completeTypeString(input, q));
 
       case PropertyType.Array:
         return this.getQualifiedBaseSuggestions(
-          PropertyTypeaheadEngine.AssignableTypes.filter((type) =>
+          PropertyTypeaheadEngine.AssignableTypes.filter(type =>
             type.toLowerCase().startsWith(partialQualifier.toLowerCase()),
           ),
-        ).map((q) => this.completeTypeString(input, q));
+        ).map(q => this.completeTypeString(input, q));
 
       case PropertyType.Enum:
         return ['string', 'int', ...Object.keys(this.availableEnums)]
-          .filter((q) => q.startsWith(partialQualifier))
-          .map((q) => this.completeTypeString(input, q));
+          .filter(q => q.startsWith(partialQualifier))
+          .map(q => this.completeTypeString(input, q));
     }
 
     return [];
   }
 
   private getQualifiedBaseSuggestions(types: PropertyType[]): string[] {
-    return types.flatMap((type) => {
+    return types.flatMap(type => {
       // For types requiring qualifiers, return full type strings with qualifiers
       if (PropertyTypeaheadEngine.MandatoryQualifierTypes.has(type)) {
         switch (type) {
@@ -181,20 +181,20 @@ export class PropertyTypeaheadEngine {
             return [
               'object (inline)',
               ...Object.keys(this.availableSchemas).map(
-                (schema) => `object (${schema})`,
+                schema => `object (${schema})`,
               ),
             ];
           //For arrays, initially only suggest unqualified types to prevent infinite suggestions
           case PropertyType.Array:
             return PropertyTypeaheadEngine.AssignableTypes.filter(
-              (t) => !PropertyTypeaheadEngine.MandatoryQualifierTypes.has(t),
-            ).map((t) => `array (${t})`);
+              t => !PropertyTypeaheadEngine.MandatoryQualifierTypes.has(t),
+            ).map(t => `array (${t})`);
           case PropertyType.Enum:
             return [
               'enum (string)',
               'enum (int)',
               ...Object.keys(this.availableEnums).map(
-                (enumName) => `enum (${enumName})`,
+                enumName => `enum (${enumName})`,
               ),
             ];
           default:

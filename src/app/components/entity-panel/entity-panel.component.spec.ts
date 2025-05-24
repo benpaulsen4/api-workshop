@@ -1,14 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EntityPanelComponent } from './entity-panel.component';
-import { BehaviorSubject, of } from 'rxjs';
-import { instantiateNamedEntity, NamedEntity } from '../../models/named-entity';
-import { Router, NavigationEnd, Params } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
+import { NamedEntity } from '../../models/named-entity';
+import { Router } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { signal } from '@angular/core';
 import { DataCollections, DataService } from '../../services/data.service';
 import { FormControl } from '@angular/forms';
 import { Popover } from 'primeng/popover';
-import { Menu } from 'primeng/menu';
 
 describe('EntityPanelComponent', () => {
   let component: EntityPanelComponent;

@@ -90,7 +90,7 @@ export class PropertyComponent {
     );
   });
   readonly childPropertyNames = toObservable(this.childProperties).pipe(
-    map((a) => a.map((p) => p.name)),
+    map(a => a.map(p => p.name)),
   );
 
   readonly isEnumAdjacent = computed(
@@ -118,10 +118,10 @@ export class PropertyComponent {
     );
   });
   readonly enumValueNames = toObservable(this.enumValues).pipe(
-    map((a) => a.map((p) => p.name)),
+    map(a => a.map(p => p.name)),
   );
   readonly enumValueKeys = toObservable(this.enumValues).pipe(
-    map((a) => a.map((p) => p.value)),
+    map(a => a.map(p => p.value)),
   );
   readonly enumType = computed(() => {
     const type =
@@ -256,7 +256,7 @@ export class PropertyComponent {
         break;
       case PropertyType.Object: {
         const castedOptions = prop.options! as ObjectOptions;
-        baseString = `object (${castedOptions.objectType == 'inline' ? 'inline' : Object.entries(this.existingSchemaLookup() ?? {}).find((e) => e[1] == castedOptions.refId)?.[0]})`;
+        baseString = `object (${castedOptions.objectType == 'inline' ? 'inline' : Object.entries(this.existingSchemaLookup() ?? {}).find(e => e[1] == castedOptions.refId)?.[0]})`;
         break;
       }
       case PropertyType.Array: {
@@ -266,7 +266,7 @@ export class PropertyComponent {
       }
       case PropertyType.Enum: {
         const castedOptions = prop.options! as EnumOptions;
-        baseString = `enum (${castedOptions.enumType === 'ref' ? Object.entries(this.enumLookup() ?? {}).find((e) => e[1] == castedOptions.refId)?.[0] : castedOptions.enumType})`;
+        baseString = `enum (${castedOptions.enumType === 'ref' ? Object.entries(this.enumLookup() ?? {}).find(e => e[1] == castedOptions.refId)?.[0] : castedOptions.enumType})`;
         break;
       }
       case PropertyType.Unknown:

@@ -74,20 +74,20 @@ export class EnumEditorComponent implements OnInit {
         selector: { refIndex: this.enumId() },
       })
       .exec()
-      .then((schemas) => {
+      .then(schemas => {
         this.schemaReferences.set(schemas);
       });
   });
 
   readonly entriesSubject = new BehaviorSubject<EnumEntry[]>([]); // HACK for same reason as schema editor, though I'm pretty sure I know how to fix this now - leaving as is for consistency
   readonly entryNames = this.entriesSubject.pipe(
-    map((entries) => entries.map((e) => e.name)),
+    map(entries => entries.map(e => e.name)),
   );
   readonly entryValues = this.entriesSubject.pipe(
-    map((entries) => entries.map((e) => e.value)),
+    map(entries => entries.map(e => e.value)),
   );
   readonly canChangeType = this.entriesSubject.pipe(
-    map((entries) => !entries.length),
+    map(entries => !entries.length),
   );
 
   constructor(

@@ -74,7 +74,7 @@
     ></p-button>
   </p-inputgroup>
 
-  @if (nameControl.errors && nameControl.errors["duplicate"]) {
+  @if (nameControl.errors && nameControl.errors['duplicate']) {
     <small id="name-help" class="invalid"
       >A {{ entity().slice(0, -1) }} with this name already exists</small
     >

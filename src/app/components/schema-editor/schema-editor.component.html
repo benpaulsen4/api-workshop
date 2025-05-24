@@ -6,29 +6,29 @@
     <ng-template #start
       ><div class="status-section">
         <span>{{
-          schema().properties.length | plural: "Property" : "Properties"
+          schema().properties.length | plural: 'Property' : 'Properties'
         }}</span>
         <span>•</span>
         <!-- TODO add a dropdown here to quickly go to references -->
         @if (this.schemaReferences().length) {
           <span
             >Referenced by
-            {{ this.schemaReferences().length | plural: "schema" }}</span
+            {{ this.schemaReferences().length | plural: 'schema' }}</span
           >
           <span>•</span>
         }
         <span>
           @switch (saveState()) {
-            @case ("noChange") {
-              Modified {{ schema().modified | date: "medium" }}
+            @case ('noChange') {
+              Modified {{ schema().modified | date: 'medium' }}
             }
-            @case ("unsaved") {
+            @case ('unsaved') {
               Unsaved changes
             }
-            @case ("saving") {
+            @case ('saving') {
               Saving...
             }
-            @case ("saved") {
+            @case ('saved') {
               Saved {{ schema().modified | timeAgo }}
             }
           }

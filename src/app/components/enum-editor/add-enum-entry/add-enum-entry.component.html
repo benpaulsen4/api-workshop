@@ -31,10 +31,10 @@
   @for (error of errorCodesOf(nameFormControl.errors); track error) {
     <p-message severity="error" icon="pi pi-times-circle">
       @switch (error) {
-        @case ("required") {
+        @case ('required') {
           A name is required
         }
-        @case ("duplicate") {
+        @case ('duplicate') {
           An entry with this name already exists
         }
       }
@@ -46,7 +46,7 @@
   @for (error of errorCodesOf(valueFormControl.errors); track error) {
     <p-message severity="error" icon="pi pi-times-circle">
       @switch (error) {
-        @case ("duplicate") {
+        @case ('duplicate') {
           An entry with this value already exists
         }
       }

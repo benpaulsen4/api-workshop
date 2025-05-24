@@ -1,10 +1,8 @@
 import {
   Component,
-  DestroyRef,
   Injector,
   input,
   OnInit,
-  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -18,16 +16,11 @@ import { InputGroup } from 'primeng/inputgroup';
 import { InputText } from 'primeng/inputtext';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CustomValidators } from '../../utilities/custom-validators';
-import { map, Observable, Subject, takeUntil } from 'rxjs';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { map, Observable } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { AsyncPipe } from '@angular/common';
 import { instantiateNamedEntity, NamedEntity } from '../../models/named-entity';
-import {
-  NavigationEnd,
-  Router,
-  RouterLink,
-  RouterLinkActive,
-} from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { DataCollections, DataService } from '../../services/data.service';
 import { RxCollection } from 'rxdb';
 
@@ -102,9 +95,7 @@ export class EntityPanelComponent implements OnInit {
       Validators.maxLength(100),
       CustomValidators.noDuplicates(
         toSignal(
-          this.collection
-            .find()
-            .$.pipe(map((items) => items.map((i) => i.name))),
+          this.collection.find().$.pipe(map(items => items.map(i => i.name))),
           {
             injector: this.injector,
           },

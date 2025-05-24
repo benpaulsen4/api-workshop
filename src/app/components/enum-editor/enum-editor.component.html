@@ -5,27 +5,27 @@
   <p-toolbar>
     <ng-template #start
       ><div class="status-section">
-        <span>{{ enum().values.length | plural: "Entry" : "Entries" }}</span>
+        <span>{{ enum().values.length | plural: 'Entry' : 'Entries' }}</span>
         <span>•</span>
         @if (this.schemaReferences().length) {
           <span
             >Referenced by
-            {{ this.schemaReferences().length | plural: "schema" }}</span
+            {{ this.schemaReferences().length | plural: 'schema' }}</span
           >
           <span>•</span>
         }
         <span>
           @switch (saveState()) {
-            @case ("noChange") {
-              Modified {{ enum().modified | date: "medium" }}
+            @case ('noChange') {
+              Modified {{ enum().modified | date: 'medium' }}
             }
-            @case ("unsaved") {
+            @case ('unsaved') {
               Unsaved changes
             }
-            @case ("saving") {
+            @case ('saving') {
               Saving...
             }
-            @case ("saved") {
+            @case ('saved') {
               Saved {{ enum().modified | timeAgo }}
             }
           }

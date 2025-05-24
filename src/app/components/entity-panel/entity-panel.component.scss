@@ -17,7 +17,8 @@
     }
 
     &:hover,
-    &.selected, &.selected-alt {
+    &.selected,
+    &.selected-alt {
       background: var(--p-menu-item-focus-background);
       p-button {
         opacity: 100;
