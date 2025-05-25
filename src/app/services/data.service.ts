@@ -35,10 +35,20 @@ export class DataService {
             return oldDoc;
           },
           3: oldDoc => oldDoc,
+          4: oldDoc => {
+            oldDoc.nameLower = oldDoc.name.toLowerCase();
+            return oldDoc;
+          },
         },
       },
       enums: {
         schema: EnumSchema,
+        migrationStrategies: {
+          1: oldDoc => {
+            oldDoc.nameLower = oldDoc.name.toLowerCase();
+            return oldDoc;
+          },
+        },
       },
     });
     console.log('db ready');

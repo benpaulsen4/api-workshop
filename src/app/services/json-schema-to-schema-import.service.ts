@@ -80,12 +80,14 @@ export class JsonSchemaToSchemaImportService {
     currentPath: string,
     supplementalTitle?: string,
   ): Schema {
+    const name =
+      jsonSchema.title ?? supplementalTitle ?? `ImportedSchema-${Date.now()}`;
     const schema: Schema = {
       id: v7(),
       created: Date.now(),
       modified: Date.now(),
-      name:
-        jsonSchema.title ?? supplementalTitle ?? `ImportedSchema-${Date.now()}`,
+      name,
+      nameLower: name.toLowerCase(),
       properties: [],
       refIndex: [],
     };
@@ -123,11 +125,14 @@ export class JsonSchemaToSchemaImportService {
     currentPath: string,
     supplementalTitle?: string,
   ): Enum {
+    const name =
+      jsonEnum.title ?? supplementalTitle ?? `ImportedEnum-${Date.now()}`;
     const createdEnum: Enum = {
       id: v7(),
       created: Date.now(),
       modified: Date.now(),
-      name: jsonEnum.title ?? supplementalTitle ?? `ImportedEnum-${Date.now()}`,
+      name,
+      nameLower: name.toLowerCase(),
       enumType: jsonEnum.type === 'string' ? 'string' : 'int',
       values: this.mapEnumValues(jsonEnum),
     };

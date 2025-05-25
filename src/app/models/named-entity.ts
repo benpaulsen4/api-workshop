@@ -6,6 +6,7 @@ import { Schema } from './schema';
 export interface NamedEntity {
   id: string;
   name: string;
+  nameLower: string;
   created: number;
   modified: number;
 }
@@ -19,6 +20,7 @@ export function instantiateNamedEntity(
       return {
         id: v7(),
         name: name,
+        nameLower: name.toLowerCase(),
         created: Date.now(),
         modified: Date.now(),
         properties: [],
@@ -28,6 +30,7 @@ export function instantiateNamedEntity(
       return {
         id: v7(),
         name: name,
+        nameLower: name.toLowerCase(),
         created: Date.now(),
         modified: Date.now(),
         enumType: 'string',

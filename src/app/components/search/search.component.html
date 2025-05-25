@@ -1,0 +1,85 @@
+<p-dialog modal="true" dismissableMask="true" [(visible)]="visible">
+  <ng-template #headless>
+    <div class="search-container">
+      <input
+        #searchField
+        type="text"
+        [(ngModel)]="searchTerm"
+        placeholder="Search for something..."
+        (keydown.arrowdown)="$event.preventDefault()"
+        (keydown.arrowup)="$event.preventDefault()"
+      />
+
+      @if (searchTerm()) {
+        <hr />
+        <div class="results">
+          <span class="count"
+            >{{
+              schemaResults().length + enumResults().length | plural: 'result'
+            }}
+            found</span
+          >
+
+          @if (schemaResults().length) {
+            <h6>Schemas</h6>
+            <ul>
+              @for (
+                result of schemaResults();
+                track result.id;
+                let i = $index
+              ) {
+                <li>
+                  <a
+                    class="unstyled"
+                    [class.selected]="isItemSelected('schema', i)"
+                    [routerLink]="['schemas', result.id]"
+                    (click)="visible.set(false)"
+                    >{{ result.name }}
+                    <span class="modified"
+                      >Modified {{ result.modified | date: 'short' }}</span
+                    >
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (enumResults().length) {
+            <h6>Enums</h6>
+            <ul>
+              @for (result of enumResults(); track result.id; let i = $index) {
+                <li>
+                  <a
+                    class="unstyled"
+                    [class.selected]="isItemSelected('enum', i)"
+                    [routerLink]="['enums', result.id]"
+                    (click)="visible.set(false)"
+                    >{{ result.name }}
+                    <span class="modified"
+                      >Modified {{ result.modified | date: 'short' }}</span
+                    >
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+    @if (showTip()) {
+      <div class="tip">
+        Tip: use <kbd>ctrl</kbd><kbd>k</kbd> to open search at any time.
+      </div>
+    }
+  </ng-template>
+</p-dialog>
+
+<p-button
+  label="Search"
+  icon="pi pi-search"
+  variant="outlined"
+  severity="secondary"
+  size="large"
+  fluid="true"
+  (click)="onOpen()"
+></p-button>

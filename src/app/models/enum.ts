@@ -16,7 +16,7 @@ export interface EnumEntry {
 }
 
 export const EnumSchema = {
-  version: 0,
+  version: 1,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -25,6 +25,9 @@ export const EnumSchema = {
       maxLength: 32, //guid length
     },
     name: {
+      type: 'string',
+    },
+    nameLower: {
       type: 'string',
     },
     created: {

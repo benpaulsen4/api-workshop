@@ -65,7 +65,7 @@ export interface UnknownOptions {
 }
 
 export const SchemaSchema = {
-  version: 3,
+  version: 4,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -74,6 +74,9 @@ export const SchemaSchema = {
       maxLength: 32, //guid length
     },
     name: {
+      type: 'string',
+    },
+    nameLower: {
       type: 'string',
     },
     created: {

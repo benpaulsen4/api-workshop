@@ -6,11 +6,18 @@ import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { RouterOutlet } from '@angular/router';
 import { ImportComponent } from './components/import/import.component';
+import { SearchComponent } from './components/search/search.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [EntityPanelComponent, Toast, RouterOutlet, ImportComponent],
+  imports: [
+    EntityPanelComponent,
+    Toast,
+    RouterOutlet,
+    ImportComponent,
+    SearchComponent,
+  ],
   providers: [MessageService],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
