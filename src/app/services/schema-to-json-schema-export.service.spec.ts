@@ -37,6 +37,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const schema: Schema = {
       id: 'test-schema',
       name: 'TestSchema',
+      nameLower: 'testschema',
       created: 1234567890,
       modified: 1234567890,
       properties: [
@@ -80,6 +81,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const schema: Schema = {
       id: 'test-array',
       name: 'TestArray',
+      nameLower: 'testarray',
       created: 1234567890,
       modified: 1234567890,
       properties: [
@@ -108,6 +110,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const schema: Schema = {
       id: 'test-enum',
       name: 'TestEnum',
+      nameLower: 'testenum',
       created: 1234567890,
       modified: 1234567890,
       properties: [
@@ -148,6 +151,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const schema: Schema = {
       id: 'test-object',
       name: 'TestObject',
+      nameLower: 'testobject',
       created: 1234567890,
       modified: 1234567890,
       properties: [
@@ -184,6 +188,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const referencedSchema: Schema = {
       id: 'referenced-schema',
       name: 'ReferencedSchema',
+      nameLower: 'referencedschema',
       created: 1234567890,
       modified: 1234567890,
       properties: [
@@ -199,6 +204,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const schema: Schema = {
       id: 'test-ref',
       name: 'TestRef',
+      nameLower: 'testref',
       created: 1234567890,
       modified: 1234567890,
       properties: [
@@ -238,6 +244,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const schema: Schema = {
       id: 'recursive-schema',
       name: 'RecursiveSchema',
+      nameLower: 'recursiveschema',
       created: 1234567890,
       modified: 1234567890,
       properties: [
@@ -278,6 +285,7 @@ describe('SchemaToJsonSchemaExportService', () => {
     const schema: Schema = {
       id: 'test-enum-ref',
       name: 'TestEnumRef',
+      nameLower: 'testenumref',
       created: 1234567890,
       modified: 1234567890,
       properties: [

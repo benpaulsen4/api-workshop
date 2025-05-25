@@ -23,7 +23,13 @@ describe('EditActions', () => {
     let testEntity: NamedEntity;
 
     beforeEach(() => {
-      testEntity = { id: 'test', name: 'oldName', created: 1, modified: 1 };
+      testEntity = {
+        id: 'test',
+        name: 'oldName',
+        nameLower: 'oldname',
+        created: 1,
+        modified: 1,
+      };
     });
 
     it('should update name when apply is called', () => {
@@ -53,6 +59,7 @@ describe('EditActions', () => {
       testSchema = {
         id: '1',
         name: 'test',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         properties: [],
@@ -167,6 +174,7 @@ describe('EditActions', () => {
       testSchema = {
         id: '1',
         name: 'test',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         properties: [testProperty],
@@ -293,6 +301,7 @@ describe('EditActions', () => {
       testSchema = {
         id: '1',
         name: 'test',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         properties: [beforeProperty],
@@ -486,6 +495,7 @@ describe('EditActions', () => {
       testSchema = {
         id: '1',
         name: 'test',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         properties: [parentProperty],
@@ -693,6 +703,7 @@ describe('EditActions', () => {
       testEnum = {
         id: 'test',
         name: 'testEnum',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         enumType: 'string',
@@ -730,6 +741,7 @@ describe('EditActions', () => {
       testEnum = {
         id: 'test',
         name: 'testEnum',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         enumType: 'string',
@@ -771,6 +783,7 @@ describe('EditActions', () => {
       testEnum = {
         id: 'test',
         name: 'testEnum',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         enumType: 'string',
@@ -812,6 +825,7 @@ describe('EditActions', () => {
       testEnum = {
         id: 'test',
         name: 'testEnum',
+        nameLower: 'test',
         created: 1,
         modified: 1,
         enumType: 'string',

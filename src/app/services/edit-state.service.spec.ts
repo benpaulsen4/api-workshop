@@ -22,6 +22,7 @@ describe('EditStateService', () => {
     mockEntity = {
       id: 'test-id',
       name: 'Test Entity',
+      nameLower: 'test entity',
       created: Date.now(),
       modified: Date.now(),
     };

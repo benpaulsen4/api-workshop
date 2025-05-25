@@ -19,6 +19,7 @@ describe('SchemaEditorComponent', () => {
     mockSchema = {
       id: 'test-id',
       name: 'TestSchema',
+      nameLower: 'testschema',
       properties: [],
       refIndex: [],
       created: 1,

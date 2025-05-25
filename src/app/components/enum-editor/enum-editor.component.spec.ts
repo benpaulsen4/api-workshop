@@ -21,6 +21,7 @@ describe('EnumEditorComponent', () => {
     mockEnum = {
       id: 'test-id',
       name: 'TestEnum',
+      nameLower: 'testenum',
       enumType: 'string',
       values: [],
       created: 1,
