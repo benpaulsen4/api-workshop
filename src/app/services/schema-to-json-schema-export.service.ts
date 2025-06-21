@@ -32,7 +32,7 @@ export class SchemaToJsonSchemaExportService {
   }
 
   public async export(schema: Schema): Promise<void> {
-    const converted = await this.convertSchema(schema, undefined, true);
+    const converted = await this.convertSchema(schema, undefined, true, '#');
     const stringData = JSON.stringify(converted);
     this.downloadService.downloadFromTextData(
       stringData,
@@ -45,6 +45,7 @@ export class SchemaToJsonSchemaExportService {
     schema: Schema,
     externalDefs: Record<string, any> | undefined = undefined,
     includeMetaschemaTag = false,
+    currentRoot: string,
   ): Promise<any> {
     const result = {
       $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -67,6 +68,7 @@ export class SchemaToJsonSchemaExportService {
         result.required,
         externalDefs ?? result.$defs,
         schema.id,
+        currentRoot,
       );
     }
 
@@ -86,6 +88,7 @@ export class SchemaToJsonSchemaExportService {
     requiredArray: string[],
     defs: Record<string, any>,
     currentSchemaId: string,
+    currentRoot: string,
   ): Promise<any> {
     if (!property.nullable) {
       requiredArray.push(property.name);
@@ -119,6 +122,7 @@ export class SchemaToJsonSchemaExportService {
             [],
             defs,
             currentSchemaId,
+            currentRoot,
           ),
         };
       case PropertyType.Object: {
@@ -137,15 +141,15 @@ export class SchemaToJsonSchemaExportService {
                 result.required,
                 defs,
                 currentSchemaId,
+                currentRoot,
               );
           }
           return result;
         } else {
           if (objectOptions.refId === currentSchemaId) {
             //special handling for recursive schemas
-            // TODO does this work if the recursive schema is itself a def? // BUG (no, no it does not)
             return {
-              $ref: '#',
+              $ref: currentRoot,
             };
           }
 
@@ -223,7 +227,12 @@ export class SchemaToJsonSchemaExportService {
         }
       }
 
-      defs[name] = await this.convertSchema(entity as Schema, defs);
+      defs[name] = await this.convertSchema(
+        entity as Schema,
+        defs,
+        false,
+        `#/$defs/${name}`,
+      );
       return `#/$defs/${name}`;
     } else if ((entity as Enum)?.values) {
       while (defs[name]) {

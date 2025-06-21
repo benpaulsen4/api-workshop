@@ -26,6 +26,8 @@ export class JsonSchemaToSchemaImportService {
     this.enumCollection = dataService.getCollection(DataCollections.Enums);
   }
 
+  // Note: Only unbundedled single-file imports are supported at the moment. This means that all sub-schemas are expected to be aware that they are child definitions of the root schema.
+  // As such, all references will be evaluated from the root (#) and references which do not start with this will be ignored.
   public async import(json: string): Promise<ImportResult> {
     this.reset();
     let jsonSchema: any;
@@ -80,6 +82,7 @@ export class JsonSchemaToSchemaImportService {
     jsonSchema: any,
     currentPath: string,
     supplementalTitle?: string,
+    rootSchema?: any,
   ): Schema {
     const name =
       jsonSchema.title ?? supplementalTitle ?? `ImportedSchema-${Date.now()}`;
@@ -94,7 +97,11 @@ export class JsonSchemaToSchemaImportService {
     };
 
     for (const [name, property] of Object.entries(jsonSchema.properties)) {
-      const prop = this.convertProperty(name, property, jsonSchema);
+      const prop = this.convertProperty(
+        name,
+        property,
+        rootSchema ?? jsonSchema,
+      );
       schema.properties.push(prop);
 
       this.handleRecursiveReference(prop, schema);
@@ -134,7 +141,7 @@ export class JsonSchemaToSchemaImportService {
   private convertProperty(
     name: string,
     jsonProperty: any,
-    parentSchema: any,
+    rootSchema: any,
   ): Property {
     const propertyResult: Property = {
       name,
@@ -144,7 +151,7 @@ export class JsonSchemaToSchemaImportService {
     };
 
     if (jsonProperty.$ref) {
-      return this.handleReference(name, jsonProperty.$ref, parentSchema);
+      return this.handleReference(name, jsonProperty.$ref, rootSchema);
     }
 
     switch (jsonProperty.type) {
@@ -185,7 +192,7 @@ export class JsonSchemaToSchemaImportService {
           const fakeChildProp = this.convertProperty(
             'fake',
             jsonProperty.items,
-            parentSchema,
+            rootSchema,
           );
           propertyResult.options = {
             childType: fakeChildProp.type,
@@ -205,7 +212,7 @@ export class JsonSchemaToSchemaImportService {
         propertyResult.options = {
           objectType: 'inline',
           childProperties: Object.entries(jsonProperty.properties).map(
-            ([name, prop]) => this.convertProperty(name, prop, parentSchema),
+            ([name, prop]) => this.convertProperty(name, prop, rootSchema),
           ),
         };
 
@@ -231,6 +238,7 @@ export class JsonSchemaToSchemaImportService {
     refPath: string,
     rootSchema: any,
   ): Property {
+    console.log(name, rootSchema);
     if (refPath === '#') {
       // Reference is recursive
       return {
@@ -294,6 +302,7 @@ export class JsonSchemaToSchemaImportService {
         currentScope,
         refPath,
         pathParts.pop(),
+        rootSchema,
       );
 
       return {
@@ -389,7 +398,6 @@ export class JsonSchemaToSchemaImportService {
     const potentialRef = (prop.options as Reference)?.refId
       ? (prop.options as Reference)
       : ((prop.options as ArrayOptions)?.childOptions as Reference);
-    console.log(prop.name, prop.type, potentialRef);
     if (potentialRef && potentialRef.refId) {
       if (potentialRef.refId === 'self') potentialRef.refId = schema.id;
       schema.refIndex.push(potentialRef.refId);
