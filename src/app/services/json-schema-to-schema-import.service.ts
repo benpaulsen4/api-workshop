@@ -83,6 +83,7 @@ export class JsonSchemaToSchemaImportService {
     currentPath: string,
     supplementalTitle?: string,
     rootSchema?: any,
+    rootPath = '#',
   ): Schema {
     const name =
       jsonSchema.title ?? supplementalTitle ?? `ImportedSchema-${Date.now()}`;
@@ -101,6 +102,7 @@ export class JsonSchemaToSchemaImportService {
         name,
         property,
         rootSchema ?? jsonSchema,
+        rootPath,
       );
       schema.properties.push(prop);
 
@@ -142,6 +144,7 @@ export class JsonSchemaToSchemaImportService {
     name: string,
     jsonProperty: any,
     rootSchema: any,
+    rootPath: string,
   ): Property {
     const propertyResult: Property = {
       name,
@@ -151,7 +154,12 @@ export class JsonSchemaToSchemaImportService {
     };
 
     if (jsonProperty.$ref) {
-      return this.handleReference(name, jsonProperty.$ref, rootSchema);
+      return this.handleReference(
+        name,
+        jsonProperty.$ref,
+        rootSchema,
+        rootPath,
+      );
     }
 
     switch (jsonProperty.type) {
@@ -193,6 +201,7 @@ export class JsonSchemaToSchemaImportService {
             'fake',
             jsonProperty.items,
             rootSchema,
+            rootPath,
           );
           propertyResult.options = {
             childType: fakeChildProp.type,
@@ -212,7 +221,8 @@ export class JsonSchemaToSchemaImportService {
         propertyResult.options = {
           objectType: 'inline',
           childProperties: Object.entries(jsonProperty.properties).map(
-            ([name, prop]) => this.convertProperty(name, prop, rootSchema),
+            ([name, prop]) =>
+              this.convertProperty(name, prop, rootSchema, rootPath),
           ),
         };
 
@@ -237,9 +247,9 @@ export class JsonSchemaToSchemaImportService {
     name: string,
     refPath: string,
     rootSchema: any,
+    rootPath: string,
   ): Property {
-    console.log(name, rootSchema);
-    if (refPath === '#') {
+    if (refPath === rootPath) {
       // Reference is recursive
       return {
         name,
@@ -303,6 +313,7 @@ export class JsonSchemaToSchemaImportService {
         refPath,
         pathParts.pop(),
         rootSchema,
+        refPath,
       );
 
       return {
@@ -345,7 +356,7 @@ export class JsonSchemaToSchemaImportService {
       }
     } else {
       // Add regular property
-      return this.convertProperty(name, currentScope, rootSchema);
+      return this.convertProperty(name, currentScope, rootSchema, rootPath);
     }
   }
 

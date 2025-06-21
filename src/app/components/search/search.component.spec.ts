@@ -195,7 +195,6 @@ describe('SearchComponent', () => {
     fixture.detectChanges();
 
     // Verify results are cleared
-    console.log(component.searchTerm());
     expect(component.schemaResults().length).toBe(0);
     expect(component.enumResults().length).toBe(0);
     expect(component.selectedIndex()).toBe(-1);
