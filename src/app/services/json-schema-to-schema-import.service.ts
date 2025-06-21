@@ -3,6 +3,7 @@ import { RxCollection } from 'rxdb';
 import { DataService, DataCollections } from './data.service';
 import {
   ArrayOptions,
+  ObjectOptions,
   Property,
   PropertyType,
   Reference,
@@ -93,21 +94,10 @@ export class JsonSchemaToSchemaImportService {
     };
 
     for (const [name, property] of Object.entries(jsonSchema.properties)) {
-      const prop = this.convertProperty(
-        name,
-        property,
-        currentPath,
-        jsonSchema,
-      );
+      const prop = this.convertProperty(name, property, jsonSchema);
       schema.properties.push(prop);
 
-      const potentialRef =
-        (prop.options as Reference) ??
-        ((prop.options as ArrayOptions)?.childOptions as Reference);
-      if (potentialRef && potentialRef.refId) {
-        if (potentialRef.refId === 'self') potentialRef.refId = schema.id;
-        schema.refIndex.push(potentialRef.refId);
-      }
+      this.handleRecursiveReference(prop, schema);
     }
 
     if (jsonSchema.required) {
@@ -144,7 +134,6 @@ export class JsonSchemaToSchemaImportService {
   private convertProperty(
     name: string,
     jsonProperty: any,
-    currentPath: string,
     parentSchema: any,
   ): Property {
     const propertyResult: Property = {
@@ -155,12 +144,7 @@ export class JsonSchemaToSchemaImportService {
     };
 
     if (jsonProperty.$ref) {
-      return this.handleReference(
-        name,
-        jsonProperty.$ref,
-        currentPath,
-        parentSchema,
-      );
+      return this.handleReference(name, jsonProperty.$ref, parentSchema);
     }
 
     switch (jsonProperty.type) {
@@ -201,7 +185,6 @@ export class JsonSchemaToSchemaImportService {
           const fakeChildProp = this.convertProperty(
             'fake',
             jsonProperty.items,
-            currentPath,
             parentSchema,
           );
           propertyResult.options = {
@@ -222,13 +205,7 @@ export class JsonSchemaToSchemaImportService {
         propertyResult.options = {
           objectType: 'inline',
           childProperties: Object.entries(jsonProperty.properties).map(
-            ([name, prop]) =>
-              this.convertProperty(
-                name,
-                prop,
-                currentPath + `/properties/${name}`,
-                parentSchema,
-              ),
+            ([name, prop]) => this.convertProperty(name, prop, parentSchema),
           ),
         };
 
@@ -252,10 +229,9 @@ export class JsonSchemaToSchemaImportService {
   private handleReference(
     name: string,
     refPath: string,
-    currentPath: string,
     rootSchema: any,
   ): Property {
-    if (refPath === currentPath) {
+    if (refPath === '#') {
       // Reference is recursive
       return {
         name,
@@ -360,7 +336,7 @@ export class JsonSchemaToSchemaImportService {
       }
     } else {
       // Add regular property
-      return this.convertProperty(name, currentScope, currentPath, rootSchema);
+      return this.convertProperty(name, currentScope, rootSchema);
     }
   }
 
@@ -393,6 +369,31 @@ export class JsonSchemaToSchemaImportService {
         originalDefinition,
       },
     };
+  }
+
+  private handleRecursiveReference(prop: Property, schema: Schema) {
+    if (
+      prop.type === PropertyType.Object &&
+      (prop.options as ObjectOptions)?.childProperties
+    ) {
+      for (const childProp of (prop.options as ObjectOptions)!
+        .childProperties!) {
+        this.handleRecursiveReference(childProp, schema);
+      }
+    } else {
+      this.handleRecursiveReferenceInner(prop, schema);
+    }
+  }
+
+  private handleRecursiveReferenceInner(prop: Property, schema: Schema) {
+    const potentialRef = (prop.options as Reference)?.refId
+      ? (prop.options as Reference)
+      : ((prop.options as ArrayOptions)?.childOptions as Reference);
+    console.log(prop.name, prop.type, potentialRef);
+    if (potentialRef && potentialRef.refId) {
+      if (potentialRef.refId === 'self') potentialRef.refId = schema.id;
+      schema.refIndex.push(potentialRef.refId);
+    }
   }
 
   private reset() {

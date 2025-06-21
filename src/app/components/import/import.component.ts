@@ -61,7 +61,8 @@ export class ImportComponent {
           detail: `Successfully imported ${results.schemas.length ? results.schemas.length + ' schema(s)' : ''} ${results.enums.length && results.schemas.length ? 'and' : ''} ${results.enums.length ? results.enums.length + ' enum(s)' : ''}`,
         });
       }
-    } catch {
+    } catch (e) {
+      console.error(e);
       this.messageService.add({
         severity: 'error',
         summary: 'Import failed',
