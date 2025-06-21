@@ -1,39 +1,46 @@
-# ApiWorkshop
+# 🛠️ API Workshop (Schema Editor)
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.12.
+The API Workshop Schema Editor is a powerful tool designed to help you quickly and efficiently create, edit, and share API schemas. The app is currently in **early preview** and is evolving rapidly toward becoming a fully-fledged API design platform.
 
-This project includes a CI/CD pipeline for automated testing, building, and deployment to Railway.com.
+## ✨ Features
 
-## Development server
+1. **Create, manage, and edit JSON schemas** in an intuitive and keyboard-friendly interface.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Most JSON Schema data types are supported, though as the long-term goal is for the app to transition into an API design tool, full compatibility with all JSON Schema features is not a priority. Incompatibilities with JSON Schema features will be dealt with on a case-by-case basis as the app evolves.
 
-## Code scaffolding
+2. **Compose and reuse schemas and enums** with ease.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+All schemas and enums can be referenced inline for clean, well structured model design. On export, all references will be resolved and the resulting schema will be a complete, valid JSON Schema.
 
-## Build
+3. **Import existing JSON schemas and export your work** to share with others.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Importing and exporting from the Schema Editor is as simple as a click of a button. If any unsupported JSON Schema features are detected, the imported schema will attempt to keep those properties intact and let you know. Please note that at this stage the import feature only supports importing a single, unbundled schema that uses direct pointer references. References that rely on `$id` or `$anchor` will not be resolved.
 
-## Running unit tests
+4. **All work is saved in a browser-local database** and stays private to your machine.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+While a server-sync function may be added in the future, local-first working ensures the data is always available and secure. You can use export and import features to share your work with others when necessary.
 
-## Running end-to-end tests
+## 🗺️ Roadmap
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+### Schema Editor
 
-## Further help
+- [ ] Add support for descriptions and metadata features of JSON schema
+- [ ] Add support for validation features of JSON schema (such as min, max, etc.)
+- [ ] Add support for dictionaries/objects without a strict type
+- [ ] More gracefully handle simple union types on import (though full support is not planned)
+- [ ] Support importing and exporting of bundled schemas (and potentially ZIPs?)
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### API Designer
 
-## CI/CD Pipeline
+- [ ] Add a new 'Endpoint' entity to the app for API endpoints
+- [ ] Support linking endpoints to schemas for request and response bodies
+- [ ] Support importing and exporting to OpenAPI
+- [ ] More to come...
 
-This project uses GitHub Actions for continuous integration and deployment. The workflow:
+## 🤝 Contributing
 
-1. Runs Karma tests
-2. Builds the Angular application
-3. Deploys to Railway.com (for main branch only)
+Contributions are welcome! Whether you want to report a bug, suggest a feature, or submit a pull request, your input is valuable to making the API Workshop better.
 
-For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+## 📝 License
+
+This project is open source and available under the GPL3 License.
