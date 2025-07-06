@@ -1,5 +1,5 @@
 import { Enum, EnumEntry } from './enum';
-import { NamedEntity } from './named-entity';
+import { Metadata, NamedEntity } from './named-entity';
 import {
   ArrayOptions,
   EnumOptions,
@@ -32,6 +32,25 @@ export class UpdateName implements EditAction {
 
   describe(): string {
     return `Update name from '${this.before}' to '${this.after}'`;
+  }
+}
+
+export class UpdateMetadata implements EditAction {
+  constructor(
+    private before: Metadata | undefined,
+    private after: Metadata,
+  ) {}
+
+  apply(currentState: NamedEntity): void {
+    currentState.metadata = this.after;
+  }
+
+  revert(currentState: NamedEntity): void {
+    currentState.metadata = this.before;
+  }
+
+  describe(): string {
+    return `Update entity metadata'`;
   }
 }
 

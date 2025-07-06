@@ -3,6 +3,7 @@ import {
   computed,
   effect,
   input,
+  model,
   OnInit,
   signal,
 } from '@angular/core';
@@ -23,11 +24,15 @@ import {
   AddEnumEntry,
   ChangeEnumType,
   EditAction,
+  UpdateMetadata,
 } from '../../models/edit-actions';
 import { SelectButton } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
 import { Message } from 'primeng/message';
-import { NamedEntity } from '../../models/named-entity';
+import { Metadata, NamedEntity } from '../../models/named-entity';
+import { MetadataEditorComponent } from '../metadata-editor/metadata-editor.component';
+import { Dialog } from 'primeng/dialog';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-enum-editor',
@@ -44,6 +49,9 @@ import { NamedEntity } from '../../models/named-entity';
     FormsModule,
     Message,
     AsyncPipe,
+    MetadataEditorComponent,
+    Dialog,
+    Tag,
   ],
   providers: [EditStateService],
   templateUrl: './enum-editor.component.html',
@@ -60,6 +68,8 @@ export class EnumEditorComponent implements OnInit {
   readonly saveState = computed(() => this.editStateService.saveState());
   readonly canUndo = computed(() => this.editStateService.canUndo());
   readonly canRedo = computed(() => this.editStateService.canRedo());
+
+  readonly metadataVisible = model(false);
 
   readonly idChanged = effect(() => {
     if (this.enumId() === this.enum()?.id) return;
@@ -134,5 +144,12 @@ export class EnumEditorComponent implements OnInit {
       summary: 'Redo',
       detail: `Redid: ${change}`,
     });
+  }
+
+  onMetadataUpdated(metadata: Metadata) {
+    this.editStateService.addEdit(
+      new UpdateMetadata(this.enum().metadata, metadata),
+    );
+    this.metadataVisible.set(false);
   }
 }

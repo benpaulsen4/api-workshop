@@ -1,10 +1,11 @@
-import { NamedEntity } from './named-entity';
+import { Metadata, NamedEntity } from './named-entity';
 
 export interface Enum extends NamedEntity {
   id: string;
   name: string;
   created: number;
   modified: number;
+  metadata?: Metadata;
 
   enumType: 'string' | 'int';
   values: EnumEntry[];
@@ -13,10 +14,11 @@ export interface Enum extends NamedEntity {
 export interface EnumEntry {
   name: string;
   value: string | number;
+  metadata?: Metadata;
 }
 
 export const EnumSchema = {
-  version: 1,
+  version: 2,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -36,6 +38,13 @@ export const EnumSchema = {
     modified: {
       type: 'number',
     },
+    metadata: {
+      type: 'object',
+      properties: {
+        description: { type: 'string' },
+        deprecated: { type: 'boolean' },
+      },
+    },
     enumType: {
       type: 'string',
       enum: ['string', 'int'],
@@ -47,6 +56,13 @@ export const EnumSchema = {
         properties: {
           name: { type: 'string' },
           value: { oneOf: [{ type: 'string' }, { type: 'number' }] },
+          metadata: {
+            type: 'object',
+            properties: {
+              description: { type: 'string' },
+              deprecated: { type: 'boolean' },
+            },
+          },
         },
         required: ['name', 'value'],
       },

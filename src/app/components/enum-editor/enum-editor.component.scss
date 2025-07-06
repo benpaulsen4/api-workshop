@@ -4,6 +4,29 @@
   width: 100%;
 }
 
+.namecard {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 8px;
+
+  .metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+    align-items: start;
+    padding-left: 16px;
+    border-left: 2px var(--p-content-border-color) solid;
+    min-height: 50px;
+    p {
+      margin: 0;
+      color: var(--p-text-muted-color);
+    }
+  }
+}
+
 .status-section {
   gap: 8px;
   display: inline-flex;

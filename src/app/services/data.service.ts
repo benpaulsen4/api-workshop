@@ -39,6 +39,7 @@ export class DataService {
             oldDoc.nameLower = oldDoc.name.toLowerCase();
             return oldDoc;
           },
+          5: oldDoc => oldDoc,
         },
       },
       enums: {
@@ -48,6 +49,7 @@ export class DataService {
             oldDoc.nameLower = oldDoc.name.toLowerCase();
             return oldDoc;
           },
+          2: oldDoc => oldDoc,
         },
       },
     });
