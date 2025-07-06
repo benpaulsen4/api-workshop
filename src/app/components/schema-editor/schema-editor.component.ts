@@ -3,6 +3,7 @@ import {
   computed,
   effect,
   input,
+  model,
   OnInit,
   signal,
 } from '@angular/core';
@@ -14,14 +15,21 @@ import { DataCollections, DataService } from '../../services/data.service';
 import { AddPropertyComponent } from './add-property/add-property.component';
 import { Property, Schema } from '../../models/schema';
 import { PropertyComponent } from './property/property.component';
-import { AddSchemaProperty, EditAction } from '../../models/edit-actions';
+import {
+  AddSchemaProperty,
+  EditAction,
+  UpdateMetadata,
+} from '../../models/edit-actions';
 import { BehaviorSubject, map } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { PluralPipe } from '../../pipes/plural.pipe';
 import { DatePipe } from '@angular/common';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 import { SchemaToJsonSchemaExportService } from '../../services/schema-to-json-schema-export.service';
-import { NamedEntity } from '../../models/named-entity';
+import { Metadata, NamedEntity } from '../../models/named-entity';
+import { Dialog } from 'primeng/dialog';
+import { Tag } from 'primeng/tag';
+import { MetadataEditorComponent } from '../metadata-editor/metadata-editor.component';
 
 @Component({
   selector: 'app-schema-editor',
@@ -35,6 +43,9 @@ import { NamedEntity } from '../../models/named-entity';
     PluralPipe,
     DatePipe,
     TimeAgoPipe,
+    Tag,
+    Dialog,
+    MetadataEditorComponent,
   ],
   providers: [EditStateService, SchemaToJsonSchemaExportService],
   templateUrl: './schema-editor.component.html',
@@ -79,6 +90,8 @@ export class SchemaEditorComponent implements OnInit {
   readonly loading = signal(true);
   readonly addMode = signal(false);
   readonly schemaReferences = signal<NamedEntity[]>([]);
+
+  readonly metadataVisible = model(false);
 
   //Lookups are in format Name: id as they are _primarily_ used for selecting available references
   allSchemaLookup!: Record<string, string>;
@@ -144,6 +157,13 @@ export class SchemaEditorComponent implements OnInit {
       summary: 'Redo',
       detail: `Redid: ${change}`,
     });
+  }
+
+  onMetadataUpdated(metadata: Metadata) {
+    this.editStateService.addEdit(
+      new UpdateMetadata(this.schema().metadata, metadata),
+    );
+    this.metadataVisible.set(false);
   }
 
   async onExportToJsonSchema() {

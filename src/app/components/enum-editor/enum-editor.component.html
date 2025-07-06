@@ -3,7 +3,10 @@
 } @else {
   <div class="namecard">
     <h1>{{ enum().name }}</h1>
-    @if (enum().metadata) {
+    @if (
+      enum().metadata &&
+      (enum().metadata!.deprecated || enum().metadata!.description)
+    ) {
       <div class="metadata">
         @if (enum().metadata!.deprecated) {
           <p-tag severity="danger" value="Deprecated"></p-tag>

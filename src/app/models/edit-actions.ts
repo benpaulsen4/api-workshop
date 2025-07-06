@@ -50,7 +50,7 @@ export class UpdateMetadata implements EditAction {
   }
 
   describe(): string {
-    return `Update entity metadata'`;
+    return `Update entity metadata`;
   }
 }
 
