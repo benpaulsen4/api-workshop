@@ -1,3 +1,16 @@
+@if (
+  property().metadata &&
+  (property().metadata!.deprecated || property().metadata!.description)
+) {
+  <div class="metadata">
+    @if (property().metadata!.deprecated) {
+      <p-tag severity="danger" value="Deprecated"></p-tag>
+    }
+
+    <p>{{ property().metadata!.description }}</p>
+  </div>
+}
+
 <div class="info">
   <button class="unstyled name" (click)="rename.toggle($event)">
     {{ property().name }}
@@ -44,6 +57,16 @@
       >Go to Reference</p-button
     >
   }
+
+  <p-button
+    link="true"
+    class="prop-action"
+    styleClass="link-button"
+    size="small"
+    (click)="onEditMetadata($event)"
+    [class.force-show]="editingMetadata()"
+    >Edit Metadata</p-button
+  >
 
   <p-button
     link="true"
@@ -133,4 +156,11 @@
     [existingProperty]="property()"
     (retypeComplete)="onRetypeProperty($event)"
   ></app-retype-property>
+</p-popover>
+
+<p-popover #metadataEditor (onHide)="editingMetadata.set(false)">
+  <app-metadata-editor
+    [metadata]="property().metadata"
+    (metadataUpdated)="onMetadataUpdated($event)"
+  ></app-metadata-editor>
 </p-popover>

@@ -1,4 +1,7 @@
-@if (entry().metadata) {
+@if (
+  entry().metadata &&
+  (entry().metadata!.deprecated || entry().metadata!.description)
+) {
   <div class="metadata">
     @if (entry().metadata!.deprecated) {
       <p-tag severity="danger" value="Deprecated"></p-tag>
