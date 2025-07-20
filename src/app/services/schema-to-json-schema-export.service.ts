@@ -47,8 +47,7 @@ export class SchemaToJsonSchemaExportService {
     includeMetaschemaTag = false,
     currentRoot: string,
   ): Promise<any> {
-    const result = {
-      $schema: 'https://json-schema.org/draft/2020-12/schema',
+    const result: Record<string, any> = {
       title: schema.name,
       [SchemaToJsonSchemaExportService.MetadataKey]: {
         id: schema.id,
@@ -62,22 +61,31 @@ export class SchemaToJsonSchemaExportService {
       $defs: {},
     };
 
+    // Add description and deprecated status if available
+    if (schema.metadata?.description) {
+      result['description'] = schema.metadata.description;
+    }
+
+    if (schema.metadata?.deprecated !== undefined) {
+      result['deprecated'] = !!schema.metadata.deprecated;
+    }
+
     for (const property of schema.properties) {
-      (result.properties as any)[property.name] = await this.convertProperty(
+      (result['properties'] as any)[property.name] = await this.convertProperty(
         property,
-        result.required,
-        externalDefs ?? result.$defs,
+        result['required'],
+        externalDefs ?? result['$defs'],
         schema.id,
         currentRoot,
       );
     }
 
     if (externalDefs) {
-      delete (result as any).$defs;
+      delete result['$defs'];
     }
 
-    if (!includeMetaschemaTag) {
-      delete (result as any).$schema;
+    if (includeMetaschemaTag) {
+      result['$schema'] = 'https://json-schema.org/draft/2020-12/schema';
     }
 
     return result;
@@ -94,23 +102,39 @@ export class SchemaToJsonSchemaExportService {
       requiredArray.push(property.name);
     }
 
+    // Create base result object with metadata if available
+    const baseResult: any = {};
+
+    // Add description and deprecated status if available
+    if (property.metadata?.description) {
+      baseResult.description = property.metadata.description;
+    }
+
+    if (property.metadata?.deprecated !== undefined) {
+      baseResult.deprecated = !!property.metadata.deprecated;
+    }
+
     switch (property.type) {
       case PropertyType.String:
         return {
+          ...baseResult,
           type: 'string',
         };
       case PropertyType.Boolean:
         return {
+          ...baseResult,
           type: 'boolean',
         };
       case PropertyType.Number:
         return {
+          ...baseResult,
           type: (property.options as NumberOptions)?.doublePrecision
             ? 'number'
             : 'integer',
         };
       case PropertyType.Array:
         return {
+          ...baseResult,
           type: 'array',
           items: await this.convertProperty(
             {
@@ -129,6 +153,7 @@ export class SchemaToJsonSchemaExportService {
         const objectOptions = property.options as ObjectOptions;
         if (objectOptions?.objectType === 'inline') {
           const result = {
+            ...baseResult,
             type: 'object',
             properties: {},
             required: [],
@@ -149,6 +174,7 @@ export class SchemaToJsonSchemaExportService {
           if (objectOptions.refId === currentSchemaId) {
             //special handling for recursive schemas
             return {
+              ...baseResult,
               $ref: currentRoot,
             };
           }
@@ -159,6 +185,7 @@ export class SchemaToJsonSchemaExportService {
               .exec()
           ).toMutableJSON();
           return {
+            ...baseResult,
             $ref: await this.addDefReference(schema, defs),
           };
         }
@@ -166,31 +193,69 @@ export class SchemaToJsonSchemaExportService {
       case PropertyType.Enum: {
         const enumOptions = property.options as EnumOptions;
         if (enumOptions.enumType === 'string') {
+          // Create enum mappings with metadata
+          const enumMappings: Record<string | number, string> = {};
+          const enumValueMetadata: Record<string | number, any> = {};
+
+          for (const enumValue of enumOptions.values!) {
+            enumMappings[enumValue.value] = enumValue.name;
+
+            // Add metadata for each enum value if available
+            if (enumValue.metadata) {
+              enumValueMetadata[enumValue.value] = {};
+
+              if (enumValue.metadata.description) {
+                enumValueMetadata[enumValue.value].description =
+                  enumValue.metadata.description;
+              }
+
+              if (enumValue.metadata.deprecated !== undefined) {
+                enumValueMetadata[enumValue.value].deprecated =
+                  !!enumValue.metadata.deprecated;
+              }
+            }
+          }
+
           return {
+            ...baseResult,
             type: 'string',
             enum: enumOptions.values!.map(x => x.value),
             [SchemaToJsonSchemaExportService.MetadataKey]: {
-              enumMappings: enumOptions.values!.reduce(
-                (acc, x) => {
-                  acc[x.value] = x.name;
-                  return acc;
-                },
-                {} as Record<string | number, string>,
-              ),
+              enumMappings,
+              enumValueMetadata,
             },
           };
         } else if (enumOptions.enumType === 'int') {
+          // Create enum mappings with metadata
+          const enumMappings: Record<string | number, string> = {};
+          const enumValueMetadata: Record<string | number, any> = {};
+
+          for (const enumValue of enumOptions.values!) {
+            enumMappings[enumValue.value] = enumValue.name;
+
+            // Add metadata for each enum value if available
+            if (enumValue.metadata) {
+              enumValueMetadata[enumValue.value] = {};
+
+              if (enumValue.metadata.description) {
+                enumValueMetadata[enumValue.value].description =
+                  enumValue.metadata.description;
+              }
+
+              if (enumValue.metadata.deprecated !== undefined) {
+                enumValueMetadata[enumValue.value].deprecated =
+                  !!enumValue.metadata.deprecated;
+              }
+            }
+          }
+
           return {
+            ...baseResult,
             type: 'integer',
             enum: enumOptions.values!.map(x => x.value),
             [SchemaToJsonSchemaExportService.MetadataKey]: {
-              enumMappings: enumOptions.values!.reduce(
-                (acc, x) => {
-                  acc[x.value] = x.name;
-                  return acc;
-                },
-                {} as Record<string | number, string>,
-              ),
+              enumMappings,
+              enumValueMetadata,
             },
           };
         } else {
@@ -200,12 +265,16 @@ export class SchemaToJsonSchemaExportService {
               .exec()
           ).toMutableJSON();
           return {
+            ...baseResult,
             $ref: await this.addDefReference(enumEntity, defs),
           };
         }
       }
       case PropertyType.Unknown:
-        return (property.options as UnknownOptions).originalDefinition;
+        return {
+          ...baseResult,
+          ...(property.options as UnknownOptions).originalDefinition,
+        };
       default:
         throw new Error('Unknown property type');
     }
@@ -247,22 +316,55 @@ export class SchemaToJsonSchemaExportService {
 
       const castedEnum = entity as Enum;
 
-      defs[name] = {
+      // Create enum definition with metadata
+      const enumDef: any = {
         type: castedEnum.enumType === 'string' ? 'string' : 'integer',
         enum: castedEnum.values.map(x => x.value),
         [SchemaToJsonSchemaExportService.MetadataKey]: {
           id: castedEnum.id,
           created: castedEnum.created,
           modified: castedEnum.modified,
-          enumMappings: castedEnum.values.reduce(
-            (acc, x) => {
-              acc[x.value] = x.name;
-              return acc;
-            },
-            {} as Record<string | number, string>,
-          ),
         },
       };
+
+      // Add description and deprecated status if available
+      if (castedEnum.metadata?.description) {
+        enumDef.description = castedEnum.metadata.description;
+      }
+
+      if (castedEnum.metadata?.deprecated !== undefined) {
+        enumDef.deprecated = !!castedEnum.metadata.deprecated;
+      }
+
+      // Create enum mappings with metadata
+      const enumMappings: Record<string | number, string> = {};
+      const enumValueMetadata: Record<string | number, any> = {};
+
+      for (const enumValue of castedEnum.values) {
+        enumMappings[enumValue.value] = enumValue.name;
+
+        // Add metadata for each enum value if available
+        if (enumValue.metadata) {
+          enumValueMetadata[enumValue.value] = {};
+
+          if (enumValue.metadata.description) {
+            enumValueMetadata[enumValue.value].description =
+              enumValue.metadata.description;
+          }
+
+          if (enumValue.metadata.deprecated !== undefined) {
+            enumValueMetadata[enumValue.value].deprecated =
+              !!enumValue.metadata.deprecated;
+          }
+        }
+      }
+
+      enumDef[SchemaToJsonSchemaExportService.MetadataKey].enumMappings =
+        enumMappings;
+      enumDef[SchemaToJsonSchemaExportService.MetadataKey].enumValueMetadata =
+        enumValueMetadata;
+
+      defs[name] = enumDef;
       return `#/$defs/${name}`;
     } else {
       throw new Error('Unknown entity type');

@@ -20,6 +20,7 @@
     padding-left: 16px;
     border-left: 2px var(--p-content-border-color) solid;
     min-height: 50px;
+    white-space: pre-wrap;
     p {
       margin: 0;
       color: var(--p-text-muted-color);
