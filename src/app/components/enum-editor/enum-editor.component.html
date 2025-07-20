@@ -1,7 +1,21 @@
 @if (loading()) {
   loading...
 } @else {
-  <h1>{{ enum().name }}</h1>
+  <div class="namecard">
+    <h1>{{ enum().name }}</h1>
+    @if (
+      enum().metadata &&
+      (enum().metadata!.deprecated || enum().metadata!.description)
+    ) {
+      <div class="metadata">
+        @if (enum().metadata!.deprecated) {
+          <p-tag severity="danger" value="Deprecated"></p-tag>
+        }
+
+        <p>{{ enum().metadata!.description }}</p>
+      </div>
+    }
+  </div>
   <p-toolbar>
     <ng-template #start
       ><div class="status-section">
@@ -53,6 +67,15 @@
         showDelay="500"
         [disabled]="!canRedo()"
         (click)="onRedo()"
+      ></p-button>
+      <p-button
+        icon="pi pi-sliders-h"
+        text="true"
+        ariaLabel="Edit Metadata"
+        pTooltip="Edit Metadata"
+        tooltipPosition="top"
+        showDelay="500"
+        (click)="metadataVisible.set(true)"
       ></p-button>
     </ng-template>
   </p-toolbar>
@@ -108,4 +131,16 @@
 
   <ng-template #undoTip>Undo (<kbd>Ctrl</kbd> <kbd>z</kbd>)</ng-template>
   <ng-template #redoTip>Redo (<kbd>Ctrl</kbd> <kbd>y</kbd>)</ng-template>
+
+  <p-dialog
+    header="Enum Metadata"
+    modal="true"
+    dismissableMask="true"
+    [(visible)]="metadataVisible"
+  >
+    <app-metadata-editor
+      [metadata]="enum().metadata"
+      (metadataUpdated)="onMetadataUpdated($event)"
+    ></app-metadata-editor>
+  </p-dialog>
 }

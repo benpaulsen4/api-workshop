@@ -9,6 +9,12 @@ export interface NamedEntity {
   nameLower: string;
   created: number;
   modified: number;
+  metadata?: Metadata;
+}
+
+export interface Metadata {
+  description: string;
+  deprecated: boolean;
 }
 
 export function instantiateNamedEntity(

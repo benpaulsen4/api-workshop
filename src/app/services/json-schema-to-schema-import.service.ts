@@ -95,7 +95,20 @@ export class JsonSchemaToSchemaImportService {
       nameLower: name.toLowerCase(),
       properties: [],
       refIndex: [],
+      metadata: {
+        description: '',
+        deprecated: false,
+      },
     };
+
+    // Add description and deprecated metadata if available
+    if (jsonSchema.description) {
+      schema.metadata!.description = jsonSchema.description;
+    }
+
+    if (jsonSchema.deprecated !== undefined) {
+      schema.metadata!.deprecated = !!jsonSchema.deprecated;
+    }
 
     for (const [name, property] of Object.entries(jsonSchema.properties)) {
       const prop = this.convertProperty(
@@ -134,7 +147,20 @@ export class JsonSchemaToSchemaImportService {
       nameLower: name.toLowerCase(),
       enumType: jsonEnum.type === 'string' ? 'string' : 'int',
       values: this.mapEnumValues(jsonEnum),
+      metadata: {
+        description: '',
+        deprecated: false,
+      },
     };
+
+    // Add description and deprecated metadata if available
+    if (jsonEnum.description) {
+      createdEnum.metadata!.description = jsonEnum.description;
+    }
+
+    if (jsonEnum.deprecated !== undefined) {
+      createdEnum.metadata!.deprecated = !!jsonEnum.deprecated;
+    }
 
     this.enumsToCreate[currentPath] = createdEnum;
     return createdEnum;
@@ -151,7 +177,20 @@ export class JsonSchemaToSchemaImportService {
       type: PropertyType.Unknown, // Default type, will be updated below
       nullable: true, // Will be updated based on required array
       options: undefined,
+      metadata: {
+        description: '',
+        deprecated: false,
+      },
     };
+
+    // Add description and deprecated metadata if available
+    if (jsonProperty.description) {
+      propertyResult.metadata!.description = jsonProperty.description;
+    }
+
+    if (jsonProperty.deprecated !== undefined) {
+      propertyResult.metadata!.deprecated = !!jsonProperty.deprecated;
+    }
 
     if (jsonProperty.$ref) {
       return this.handleReference(
@@ -363,12 +402,33 @@ export class JsonSchemaToSchemaImportService {
   private mapEnumValues(jsonEnum: any): EnumEntry[] {
     const mappings = jsonEnum[SchemaToJsonSchemaExportService.MetadataKey]
       ?.enumMappings as Record<string | number, string>;
+    const valueMetadata = jsonEnum[SchemaToJsonSchemaExportService.MetadataKey]
+      ?.enumValueMetadata as Record<string | number, any>;
 
     if (mappings) {
-      return jsonEnum.enum.map((e: string | number) => ({
-        name: mappings[e] ?? e.toString(),
-        value: e,
-      }));
+      return jsonEnum.enum.map((e: string | number) => {
+        const entry: EnumEntry = {
+          name: mappings[e] ?? e.toString(),
+          value: e,
+          metadata: {
+            description: '',
+            deprecated: false,
+          },
+        };
+
+        // Add metadata for enum values if available
+        if (valueMetadata && valueMetadata[e]) {
+          if (valueMetadata[e].description) {
+            entry.metadata!.description = valueMetadata[e].description;
+          }
+
+          if (valueMetadata[e].deprecated !== undefined) {
+            entry.metadata!.deprecated = !!valueMetadata[e].deprecated;
+          }
+        }
+
+        return entry;
+      });
     } else {
       return jsonEnum.enum.map((e: string | number) => ({
         name: e.toString(),

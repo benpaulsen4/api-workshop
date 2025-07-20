@@ -11,6 +11,7 @@ import {
   UpdateSchemaProperty,
 } from '../../../models/edit-actions';
 import { EnumEntry } from '../../../models/enum';
+import { Metadata } from '../../../models/named-entity';
 
 describe('PropertyComponent', () => {
   let component: PropertyComponent;
@@ -389,6 +390,99 @@ describe('PropertyComponent', () => {
           },
         },
         enumUpdate,
+      ),
+    );
+  });
+
+  it('should emit metadata updates', () => {
+    const updateSpy = spyOn(component.propertyUpdated, 'emit');
+    const metadata: Metadata = {
+      description: 'Test description',
+      deprecated: true,
+    };
+
+    component.onMetadataUpdated(metadata);
+
+    expect(updateSpy).toHaveBeenCalledOnceWith(
+      new UpdateSchemaProperty(
+        {
+          name: 'testProperty',
+          type: PropertyType.String,
+          nullable: true,
+        },
+        {
+          name: 'testProperty',
+          type: PropertyType.String,
+          nullable: true,
+          metadata: {
+            description: 'Test description',
+            deprecated: true,
+          },
+        },
+      ),
+    );
+  });
+
+  it('should set editingMetadata flag when editing metadata', () => {
+    const mockEvent = new MouseEvent('click');
+    const metadataEditorSpy = jasmine.createSpyObj('Popover', ['show']);
+    (component.metadataEditor as any) = () => metadataEditorSpy;
+
+    component.onEditMetadata(mockEvent);
+
+    expect(component['editingMetadata']()).toBeTrue();
+    expect(metadataEditorSpy.show).toHaveBeenCalledWith(mockEvent);
+  });
+
+  it('should reset editingMetadata flag after metadata update', () => {
+    const metadataEditorSpy = jasmine.createSpyObj('Popover', ['hide']);
+    (component.metadataEditor as any) = () => metadataEditorSpy;
+    component['editingMetadata'].set(true);
+
+    const metadata: Metadata = {
+      description: 'Updated description',
+      deprecated: false,
+    };
+
+    component.onMetadataUpdated(metadata);
+
+    expect(component['editingMetadata']()).toBeFalse();
+    expect(metadataEditorSpy.hide).toHaveBeenCalled();
+  });
+
+  it('should handle property with existing metadata', () => {
+    const existingMetadata: Metadata = {
+      description: 'Existing description',
+      deprecated: false,
+    };
+
+    (component.property as any).set({
+      ...component.property(),
+      metadata: existingMetadata,
+    });
+
+    const updateSpy = spyOn(component.propertyUpdated, 'emit');
+    const updatedMetadata: Metadata = {
+      description: 'Updated description',
+      deprecated: true,
+    };
+
+    component.onMetadataUpdated(updatedMetadata);
+
+    expect(updateSpy).toHaveBeenCalledOnceWith(
+      new UpdateSchemaProperty(
+        {
+          name: 'testProperty',
+          type: PropertyType.String,
+          nullable: true,
+          metadata: existingMetadata,
+        },
+        {
+          name: 'testProperty',
+          type: PropertyType.String,
+          nullable: true,
+          metadata: updatedMetadata,
+        },
       ),
     );
   });

@@ -1,0 +1,33 @@
+<form [formGroup]="metadataForm">
+  <div class="control-group">
+    <label for="description">Description</label>
+    <textarea
+      pTextarea
+      id="description"
+      name="description"
+      rows="5"
+      formControlName="description"
+    ></textarea>
+    @if (
+      metadataForm.controls.description.invalid &&
+      metadataForm.controls.description.errors?.['maxlength']
+    ) {
+      <small class="invalid">Must be 1000 characters or less</small>
+    }
+  </div>
+  <div class="control-group">
+    <label for="deprecated">Deprecated</label>
+    <p-toggleswitch
+      id="deprecated"
+      name="deprecated"
+      formControlName="deprecated"
+    />
+  </div>
+
+  <p-button
+    label="Save"
+    icon="pi pi-save"
+    (click)="onSave()"
+    [disabled]="!this.metadataForm.valid"
+  ></p-button>
+</form>

@@ -1,11 +1,12 @@
 import { EnumEntry } from './enum';
-import { NamedEntity } from './named-entity';
+import { Metadata, NamedEntity } from './named-entity';
 
 export interface Schema extends NamedEntity {
   id: string;
   name: string;
   created: number;
   modified: number;
+  metadata?: Metadata;
 
   properties: Property[];
   refIndex: string[];
@@ -16,6 +17,7 @@ export interface Property {
   type: PropertyType;
   nullable: boolean;
   options?: PropertyOptions;
+  metadata?: Metadata;
 }
 
 export type PropertyOptions =
@@ -65,7 +67,7 @@ export interface UnknownOptions {
 }
 
 export const SchemaSchema = {
-  version: 4,
+  version: 5,
   primaryKey: 'id',
   type: 'object',
   properties: {
@@ -84,6 +86,13 @@ export const SchemaSchema = {
     },
     modified: {
       type: 'number',
+    },
+    metadata: {
+      type: 'object',
+      properties: {
+        description: { type: 'string' },
+        deprecated: { type: 'boolean' },
+      },
     },
     properties: {
       type: 'array',
@@ -105,6 +114,13 @@ export const SchemaSchema = {
           },
           nullable: { type: 'boolean' },
           options: { type: 'object' },
+          metadata: {
+            type: 'object',
+            properties: {
+              description: { type: 'string' },
+              deprecated: { type: 'boolean' },
+            },
+          },
         },
         required: ['name', 'type', 'nullable'],
       },

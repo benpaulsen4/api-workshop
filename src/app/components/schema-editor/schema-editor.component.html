@@ -1,7 +1,21 @@
 @if (loading()) {
   loading...
 } @else {
-  <h1>{{ schema().name }}</h1>
+  <div class="namecard">
+    <h1>{{ schema().name }}</h1>
+    @if (
+      schema().metadata &&
+      (schema().metadata!.deprecated || schema().metadata!.description)
+    ) {
+      <div class="metadata">
+        @if (schema().metadata!.deprecated) {
+          <p-tag severity="danger" value="Deprecated"></p-tag>
+        }
+
+        <p>{{ schema().metadata!.description }}</p>
+      </div>
+    }
+  </div>
   <p-toolbar>
     <ng-template #start
       ><div class="status-section">
@@ -57,6 +71,15 @@
         (click)="onRedo()"
       ></p-button>
       <p-button
+        icon="pi pi-sliders-h"
+        text="true"
+        ariaLabel="Edit Metadata"
+        pTooltip="Edit Metadata"
+        tooltipPosition="top"
+        showDelay="500"
+        (click)="metadataVisible.set(true)"
+      ></p-button>
+      <p-button
         icon="pi pi-download"
         text="true"
         ariaLabel="Download schema"
@@ -97,4 +120,16 @@
 
   <ng-template #undoTip>Undo (<kbd>Ctrl</kbd> <kbd>z</kbd>)</ng-template>
   <ng-template #redoTip>Redo (<kbd>Ctrl</kbd> <kbd>y</kbd>)</ng-template>
+
+  <p-dialog
+    header="Schema Metadata"
+    modal="true"
+    dismissableMask="true"
+    [(visible)]="metadataVisible"
+  >
+    <app-metadata-editor
+      [metadata]="schema().metadata"
+      (metadataUpdated)="onMetadataUpdated($event)"
+    ></app-metadata-editor>
+  </p-dialog>
 }

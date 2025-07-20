@@ -3,6 +3,7 @@ import { EnumEntryComponent } from './enum-entry.component';
 import { BehaviorSubject } from 'rxjs';
 import { EnumEntry } from '../../../models/enum';
 import { RemoveEnumEntry, UpdateEnumEntry } from '../../../models/edit-actions';
+import { Metadata } from '../../../models/named-entity';
 
 describe('EnumEntryComponent', () => {
   let component: EnumEntryComponent;
@@ -13,6 +14,7 @@ describe('EnumEntryComponent', () => {
   const mockEntry: EnumEntry = {
     name: 'TestEntry',
     value: 'testValue',
+    metadata: { description: 'Test description', deprecated: false },
   };
 
   beforeEach(async () => {
@@ -88,5 +90,38 @@ describe('EnumEntryComponent', () => {
       value: newValue,
     });
     expect(updateSpy).toHaveBeenCalledWith(expectedAction);
+  });
+
+  it('should show metadata editor when onEditMetadata is called', () => {
+    const mockEvent = new MouseEvent('click');
+    const mockPopover = { show: jasmine.createSpy('show') };
+    (component as any).metadataEditor = () => mockPopover;
+
+    component.onEditMetadata(mockEvent);
+
+    expect(mockPopover.show).toHaveBeenCalledWith(mockEvent);
+    expect(component.editingMetadata()).toBe(true);
+  });
+
+  it('should emit update action when metadata is updated', () => {
+    const updateSpy = spyOn(component.entryUpdated, 'emit');
+    const mockPopover = { hide: jasmine.createSpy('hide') };
+    (component as any).metadataEditor = () => mockPopover;
+
+    const newMetadata: Metadata = {
+      description: 'Updated description',
+      deprecated: true,
+    };
+
+    component.onMetadataUpdated(newMetadata);
+
+    const expectedAction = new UpdateEnumEntry(mockEntry, {
+      ...mockEntry,
+      metadata: newMetadata,
+    });
+
+    expect(updateSpy).toHaveBeenCalledWith(expectedAction);
+    expect(component.editingMetadata()).toBe(false);
+    expect(mockPopover.hide).toHaveBeenCalled();
   });
 });

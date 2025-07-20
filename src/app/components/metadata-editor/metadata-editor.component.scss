@@ -1,0 +1,25 @@
+.invalid {
+  color: var(--p-inputtext-invalid-placeholder-color);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 400px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-weight: bold;
+    font-size: 14px;
+  }
+}
+
+p-button {
+  align-self: end;
+}

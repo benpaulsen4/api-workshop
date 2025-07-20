@@ -33,6 +33,9 @@ import { EnumEntryComponent } from '../../enum-editor/enum-entry/enum-entry.comp
 import { AddEnumEntryComponent } from '../../enum-editor/add-enum-entry/add-enum-entry.component';
 import { EnumEntry } from '../../../models/enum';
 import { Router } from '@angular/router';
+import { MetadataEditorComponent } from '../../metadata-editor/metadata-editor.component';
+import { Metadata } from '../../../models/named-entity';
+import { Tag } from 'primeng/tag';
 
 @Component({
   selector: 'app-property',
@@ -47,6 +50,8 @@ import { Router } from '@angular/router';
     RetypePropertyComponent,
     EnumEntryComponent,
     AddEnumEntryComponent,
+    MetadataEditorComponent,
+    Tag,
   ],
   templateUrl: './property.component.html',
   styleUrl: './property.component.scss',
@@ -60,6 +65,7 @@ export class PropertyComponent {
   readonly propertyUpdated = output<EditAction>();
 
   readonly retypePopup = viewChild<Popover>('retype');
+  readonly metadataEditor = viewChild<Popover>('metadataEditor');
 
   readonly typeString = computed(() => this.getTypeString(this.property()));
 
@@ -152,6 +158,7 @@ export class PropertyComponent {
   );
 
   readonly addMode = signal(false);
+  readonly editingMetadata = signal(false);
 
   constructor(private router: Router) {}
 
@@ -208,6 +215,21 @@ export class PropertyComponent {
       new UpdateSchemaProperty(this.property(), newProperty),
     );
     this.retypePopup()?.hide();
+  }
+
+  onEditMetadata(event: MouseEvent) {
+    this.editingMetadata.set(true);
+    this.metadataEditor()?.show(event);
+  }
+
+  onMetadataUpdated(metadata: Metadata) {
+    const newProp = { ...this.property(), metadata };
+    this.propertyUpdated.emit(
+      new UpdateSchemaProperty(this.property(), newProp),
+    );
+
+    this.editingMetadata.set(false);
+    this.metadataEditor()?.hide();
   }
 
   async onGoToReference() {

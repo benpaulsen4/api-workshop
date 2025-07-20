@@ -1,3 +1,16 @@
+@if (
+  entry().metadata &&
+  (entry().metadata!.deprecated || entry().metadata!.description)
+) {
+  <div class="metadata">
+    @if (entry().metadata!.deprecated) {
+      <p-tag severity="danger" value="Deprecated"></p-tag>
+    }
+
+    <p>{{ entry().metadata!.description }}</p>
+  </div>
+}
+
 <div class="info">
   <button class="unstyled name" (click)="rename.toggle($event)">
     {{ entry().name }}
@@ -7,6 +20,16 @@
   </button>
 
   <div class="h-divider"></div>
+
+  <p-button
+    link="true"
+    class="entry-action"
+    styleClass="link-button"
+    size="small"
+    (click)="onEditMetadata($event)"
+    [class.force-show]="editingMetadata()"
+    >Edit Metadata</p-button
+  >
 
   <p-button
     link="true"
@@ -31,4 +54,11 @@
     [existingEntryValues]="existingEntryValues()"
     (revalueComplete)="onUpdateValue($event)"
   ></app-revalue-entry>
+</p-popover>
+
+<p-popover #metadataEditor (onHide)="editingMetadata.set(false)">
+  <app-metadata-editor
+    [metadata]="entry().metadata"
+    (metadataUpdated)="onMetadataUpdated($event)"
+  ></app-metadata-editor>
 </p-popover>
