@@ -35,7 +35,7 @@ export class UpdateName implements EditAction {
   }
 }
 
-export class UpdateMetadata implements EditAction {
+export class UpdateEntityMetadata implements EditAction {
   constructor(
     private before: Metadata | undefined,
     private after: Metadata,

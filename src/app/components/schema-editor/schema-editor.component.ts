@@ -18,7 +18,7 @@ import { PropertyComponent } from './property/property.component';
 import {
   AddSchemaProperty,
   EditAction,
-  UpdateMetadata,
+  UpdateEntityMetadata,
 } from '../../models/edit-actions';
 import { BehaviorSubject, map } from 'rxjs';
 import { MessageService } from 'primeng/api';
@@ -161,7 +161,7 @@ export class SchemaEditorComponent implements OnInit {
 
   onMetadataUpdated(metadata: Metadata) {
     this.editStateService.addEdit(
-      new UpdateMetadata(this.schema().metadata, metadata),
+      new UpdateEntityMetadata(this.schema().metadata, metadata),
     );
     this.metadataVisible.set(false);
   }

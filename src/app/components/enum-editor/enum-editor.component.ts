@@ -24,7 +24,7 @@ import {
   AddEnumEntry,
   ChangeEnumType,
   EditAction,
-  UpdateMetadata,
+  UpdateEntityMetadata,
 } from '../../models/edit-actions';
 import { SelectButton } from 'primeng/selectbutton';
 import { FormsModule } from '@angular/forms';
@@ -148,7 +148,7 @@ export class EnumEditorComponent implements OnInit {
 
   onMetadataUpdated(metadata: Metadata) {
     this.editStateService.addEdit(
-      new UpdateMetadata(this.enum().metadata, metadata),
+      new UpdateEntityMetadata(this.enum().metadata, metadata),
     );
     this.metadataVisible.set(false);
   }
