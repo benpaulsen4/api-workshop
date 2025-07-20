@@ -39,6 +39,11 @@ describe('JsonSchemaToSchemaImportService', () => {
       ],
     });
     service = TestBed.inject(JsonSchemaToSchemaImportService);
+
+    schemaCollectionMock.insert.calls.reset();
+    enumCollectionMock.insert.calls.reset();
+    schemaCollectionMock.insert.and.returnValue(Promise.resolve());
+    enumCollectionMock.insert.and.returnValue(Promise.resolve());
   });
 
   it('should be created', () => {
@@ -46,6 +51,336 @@ describe('JsonSchemaToSchemaImportService', () => {
   });
 
   describe('import method', () => {
+    describe('metadata handling', () => {
+      it('should import standalone enum with description and deprecated metadata', async () => {
+        // Create a schema with a reference to an enum definition
+        const jsonSchema = {
+          title: 'SchemaWithEnumRef',
+          type: 'object',
+          properties: {
+            status: { $ref: '#/$defs/StatusEnum' },
+          },
+          $defs: {
+            StatusEnum: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'PENDING'],
+              description: 'Status enum description',
+              deprecated: true,
+            },
+          },
+        };
+
+        const result = await service.import(JSON.stringify(jsonSchema));
+
+        expect(result.status).toBe('ok');
+        expect(result.results?.schemas.length).toBe(1);
+        expect(result.results?.enums.length).toBe(1);
+
+        // Verify the enum metadata
+        const insertedEnum = enumCollectionMock.insert.calls.first().args[0];
+        expect(insertedEnum.metadata).toBeDefined();
+        expect(insertedEnum.metadata.description).toBe(
+          'Status enum description',
+        );
+        expect(insertedEnum.metadata.deprecated).toBe(true);
+      });
+
+      it('should import schema with description and deprecated metadata', async () => {
+        const jsonSchema = {
+          title: 'SchemaWithMetadata',
+          type: 'object',
+          description: 'This is a test schema with metadata',
+          deprecated: true,
+          properties: {
+            testProp: { type: 'string' },
+          },
+        };
+
+        const result = await service.import(JSON.stringify(jsonSchema));
+
+        expect(result.status).toBe('ok');
+        expect(result.results?.schemas.length).toBe(1);
+
+        // Verify the schema metadata
+        const insertedSchema =
+          schemaCollectionMock.insert.calls.first().args[0];
+        expect(insertedSchema.metadata).toBeDefined();
+        expect(insertedSchema.metadata.description).toBe(
+          'This is a test schema with metadata',
+        );
+        expect(insertedSchema.metadata.deprecated).toBe(true);
+      });
+
+      it('should import property with description and deprecated metadata', async () => {
+        const jsonSchema = {
+          title: 'SchemaWithPropertyMetadata',
+          type: 'object',
+          properties: {
+            testProp: {
+              type: 'string',
+              description: 'This is a test property',
+              deprecated: true,
+            },
+          },
+        };
+
+        const result = await service.import(JSON.stringify(jsonSchema));
+
+        expect(result.status).toBe('ok');
+
+        // Verify the property metadata
+        const insertedSchema =
+          schemaCollectionMock.insert.calls.first().args[0];
+        const testProp = insertedSchema.properties.find(
+          (p: any) => p.name === 'testProp',
+        );
+
+        expect(testProp.metadata).toBeDefined();
+        expect(testProp.metadata.description).toBe('This is a test property');
+        expect(testProp.metadata.deprecated).toBe(true);
+      });
+
+      it('should import enum property with description and deprecated metadata', async () => {
+        const jsonSchema = {
+          title: 'SchemaWithEnumMetadata',
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'PENDING'],
+              description: 'Status of the entity',
+              deprecated: true,
+            },
+          },
+        };
+
+        const result = await service.import(JSON.stringify(jsonSchema));
+
+        expect(result.status).toBe('ok');
+
+        // Verify the enum property metadata
+        const insertedSchema =
+          schemaCollectionMock.insert.calls.first().args[0];
+        const statusProp = insertedSchema.properties.find(
+          (p: any) => p.name === 'status',
+        );
+
+        expect(statusProp.metadata).toBeDefined();
+        expect(statusProp.metadata.description).toBe('Status of the entity');
+        expect(statusProp.metadata.deprecated).toBe(true);
+        expect(statusProp.type).toBe(PropertyType.Enum);
+      });
+
+      it('should import enum values with metadata', async () => {
+        const metadataKey = SchemaToJsonSchemaExportService.MetadataKey;
+        const jsonSchema = {
+          title: 'SchemaWithEnumValueMetadata',
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              enum: ['ACTIVE', 'INACTIVE', 'PENDING'],
+              [metadataKey]: {
+                enumMappings: {
+                  ACTIVE: 'Active',
+                  INACTIVE: 'Inactive',
+                  PENDING: 'Pending',
+                },
+                enumValueMetadata: {
+                  ACTIVE: {
+                    description: 'Active status description',
+                    deprecated: false,
+                  },
+                  INACTIVE: {
+                    description: 'Inactive status description',
+                    deprecated: true,
+                  },
+                },
+              },
+            },
+          },
+        };
+
+        const result = await service.import(JSON.stringify(jsonSchema));
+
+        expect(result.status).toBe('ok');
+
+        // Verify the enum values metadata
+        const insertedSchema =
+          schemaCollectionMock.insert.calls.first().args[0];
+        const statusProp = insertedSchema.properties.find(
+          (p: any) => p.name === 'status',
+        );
+
+        expect(statusProp.type).toBe(PropertyType.Enum);
+        expect(statusProp.options.values.length).toBe(3);
+
+        // Check ACTIVE enum value
+        const activeValue = statusProp.options.values.find(
+          (v: any) => v.value === 'ACTIVE',
+        );
+        expect(activeValue.name).toBe('Active');
+        expect(activeValue.metadata).toBeDefined();
+        expect(activeValue.metadata.description).toBe(
+          'Active status description',
+        );
+        expect(activeValue.metadata.deprecated).toBe(false);
+
+        // Check INACTIVE enum value
+        const inactiveValue = statusProp.options.values.find(
+          (v: any) => v.value === 'INACTIVE',
+        );
+        expect(inactiveValue.name).toBe('Inactive');
+        expect(inactiveValue.metadata).toBeDefined();
+        expect(inactiveValue.metadata.description).toBe(
+          'Inactive status description',
+        );
+        expect(inactiveValue.metadata.deprecated).toBe(true);
+
+        // Check PENDING enum value (no specific metadata, but default metadata is created)
+        const pendingValue = statusProp.options.values.find(
+          (v: any) => v.value === 'PENDING',
+        );
+        expect(pendingValue.name).toBe('Pending');
+        expect(pendingValue.metadata).toBeDefined();
+        expect(pendingValue.metadata.description).toBe('');
+        expect(pendingValue.metadata.deprecated).toBe(false);
+      });
+
+      it('should import integer enum values with metadata', async () => {
+        const metadataKey = SchemaToJsonSchemaExportService.MetadataKey;
+        const jsonSchema = {
+          title: 'SchemaWithIntEnumValueMetadata',
+          type: 'object',
+          properties: {
+            priority: {
+              type: 'integer',
+              enum: [1, 2, 3],
+              [metadataKey]: {
+                enumMappings: {
+                  1: 'Low',
+                  2: 'Medium',
+                  3: 'High',
+                },
+                enumValueMetadata: {
+                  1: {
+                    description: 'Low priority',
+                    deprecated: false,
+                  },
+                  3: {
+                    description: 'High priority',
+                    deprecated: true,
+                  },
+                },
+              },
+            },
+          },
+        };
+
+        const result = await service.import(JSON.stringify(jsonSchema));
+
+        expect(result.status).toBe('ok');
+
+        // Verify the enum values metadata
+        const insertedSchema =
+          schemaCollectionMock.insert.calls.first().args[0];
+        const priorityProp = insertedSchema.properties.find(
+          (p: any) => p.name === 'priority',
+        );
+
+        expect(priorityProp.type).toBe(PropertyType.Enum);
+        expect(priorityProp.options.enumType).toBe('int');
+        expect(priorityProp.options.values.length).toBe(3);
+
+        // Check Low priority enum value
+        const lowValue = priorityProp.options.values.find(
+          (v: any) => v.value === 1,
+        );
+        expect(lowValue.name).toBe('Low');
+        expect(lowValue.metadata).toBeDefined();
+        expect(lowValue.metadata.description).toBe('Low priority');
+        expect(lowValue.metadata.deprecated).toBe(false);
+
+        // Check High priority enum value
+        const highValue = priorityProp.options.values.find(
+          (v: any) => v.value === 3,
+        );
+        expect(highValue.name).toBe('High');
+        expect(highValue.metadata).toBeDefined();
+        expect(highValue.metadata.description).toBe('High priority');
+        expect(highValue.metadata.deprecated).toBe(true);
+
+        // Check Medium priority enum value (no specific metadata, but default metadata is created)
+        const mediumValue = priorityProp.options.values.find(
+          (v: any) => v.value === 2,
+        );
+        expect(mediumValue.name).toBe('Medium');
+        expect(mediumValue.metadata).toBeDefined();
+        expect(mediumValue.metadata.description).toBe('');
+        expect(mediumValue.metadata.deprecated).toBe(false);
+      });
+
+      it('should import nested object properties with metadata', async () => {
+        const jsonSchema = {
+          title: 'SchemaWithNestedMetadata',
+          type: 'object',
+          properties: {
+            address: {
+              type: 'object',
+              description: 'Address information',
+              deprecated: false,
+              properties: {
+                street: {
+                  type: 'string',
+                  description: 'Street address',
+                  deprecated: false,
+                },
+                city: {
+                  type: 'string',
+                  description: 'City name',
+                  deprecated: true,
+                },
+              },
+            },
+          },
+        };
+
+        const result = await service.import(JSON.stringify(jsonSchema));
+
+        expect(result.status).toBe('ok');
+
+        // Verify the nested object property metadata
+        const insertedSchema =
+          schemaCollectionMock.insert.calls.first().args[0];
+        const addressProp = insertedSchema.properties.find(
+          (p: any) => p.name === 'address',
+        );
+
+        expect(addressProp.type).toBe(PropertyType.Object);
+        expect(addressProp.metadata).toBeDefined();
+        expect(addressProp.metadata.description).toBe('Address information');
+        expect(addressProp.metadata.deprecated).toBe(false);
+
+        // Verify nested properties metadata
+        expect(addressProp.options.objectType).toBe('inline');
+        expect(addressProp.options.childProperties.length).toBe(2);
+
+        const streetProp = addressProp.options.childProperties.find(
+          (p: any) => p.name === 'street',
+        );
+        expect(streetProp.metadata).toBeDefined();
+        expect(streetProp.metadata.description).toBe('Street address');
+        expect(streetProp.metadata.deprecated).toBe(false);
+
+        const cityProp = addressProp.options.childProperties.find(
+          (p: any) => p.name === 'city',
+        );
+        expect(cityProp.metadata).toBeDefined();
+        expect(cityProp.metadata.description).toBe('City name');
+        expect(cityProp.metadata.deprecated).toBe(true);
+      });
+    });
+
     it('should return error for invalid JSON', async () => {
       const result = await service.import('invalid json');
       expect(result.status).toBe('errored');
